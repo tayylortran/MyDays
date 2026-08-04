@@ -12,16 +12,22 @@ export default function Home() {
   const [month, setMonth] = useState(today.getMonth());
   const [circles, setCircles] = useState<Circle[]>([]);
   const [hangouts, setHangouts] = useState<Hangout[]>([]);
-  const [openHangout, setOpenHangout] = useState<Hangout | null>(null);
 
   // add-hangout modal state
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [title, setTitle] = useState('');
+  const [note, setNote] = useState('');
   const [pickedCircle, setPickedCircle] = useState<string | null>(null);
 
   // new-circle inline form state
   const [addingCircle, setAddingCircle] = useState(false);
   const [newCircleName, setNewCircleName] = useState('');
+
+  // detail / edit modal state
+  const [openHangout, setOpenHangout] = useState<Hangout | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editNote, setEditNote] = useState('');
+  const [editCircle, setEditCircle] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setCircles(await repo.listCircles());
@@ -43,6 +49,7 @@ export default function Home() {
   const openAdd = (date: string) => {
     setOpenDate(date);
     setTitle('');
+    setNote('');
     setPickedCircle(circles[0]?.id ?? null);
     setAddingCircle(false);
     setNewCircleName('');
@@ -61,8 +68,8 @@ export default function Home() {
       sort: circles.length,
       updatedAt: Date.now(),
     });
-    setCircles(await repo.listCircles()); // refresh chips
-    setPickedCircle(id);                  // auto-select the new one
+    setCircles(await repo.listCircles());
+    setPickedCircle(id);
     setAddingCircle(false);
     setNewCircleName('');
   };
@@ -75,7 +82,7 @@ export default function Home() {
         id: newId(),
         date: openDate,
         title: title.trim(),
-        note: '',
+        note: note.trim(),
         circleId: pickedCircle,
         updatedAt: Date.now(),
       });
@@ -84,6 +91,27 @@ export default function Home() {
     } catch (e: any) {
       Alert.alert('Could not save', String(e?.message ?? e));
     }
+  };
+
+  const openDetail = (h: Hangout) => {
+    setOpenHangout(h);
+    setEditTitle(h.title);
+    setEditNote(h.note);
+    setEditCircle(h.circleId);
+  };
+
+  const saveEdits = async () => {
+    if (!openHangout || !editCircle) { Alert.alert('Pick a circle'); return; }
+    if (!editTitle.trim()) { Alert.alert('Add a title first'); return; }
+    await repo.saveHangout({
+      ...openHangout,
+      title: editTitle.trim(),
+      note: editNote.trim(),
+      circleId: editCircle,
+      updatedAt: Date.now(),
+    });
+    setOpenHangout(null);
+    await load();
   };
 
   const removeHangout = async () => {
@@ -119,7 +147,7 @@ export default function Home() {
                 <Pressable onPress={() => openAdd(date)} style={{ flex: 1, borderRadius: 8, backgroundColor: '#f4f2ee', padding: 4 }}>
                   <Text style={{ fontSize: 11, color: '#666' }}>{Number(date.slice(8))}</Text>
                   {(byDate[date] || []).map((h) => (
-                    <Pressable key={h.id} onPress={() => setOpenHangout(h)} style={{ backgroundColor: (circleById[h.circleId]?.color ?? '#999') + '33', borderRadius: 4, paddingHorizontal: 3, paddingVertical: 1, marginTop: 2 }}>
+                    <Pressable key={h.id} onPress={() => openDetail(h)} style={{ backgroundColor: (circleById[h.circleId]?.color ?? '#999') + '33', borderRadius: 4, paddingHorizontal: 3, paddingVertical: 1, marginTop: 2 }}>
                       <Text numberOfLines={1} style={{ fontSize: 9 }}>{h.title}</Text>
                     </Pressable>
                   ))}
@@ -145,7 +173,13 @@ export default function Home() {
                 style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 }}
               />
 
-              {/* circle chips + add-circle */}
+              <TextInput
+                placeholder="who was there / notes (optional)"
+                value={note}
+                onChangeText={setNote}
+                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 }}
+              />
+
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                 {circles.map((c) => {
                   const on = pickedCircle === c.id;
@@ -191,35 +225,58 @@ export default function Home() {
         </Pressable>
       </Modal>
 
-      {/* hangout detail bottom sheet */}
+      {/* hangout detail / edit bottom sheet */}
       <Modal visible={openHangout !== null} transparent animationType="slide" onRequestClose={() => setOpenHangout(null)}>
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} onPress={() => setOpenHangout(null)}>
-          <Pressable onPress={() => {}} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 34, gap: 12 }}>
-            {openHangout && (() => {
-              const c = circleById[openHangout.circleId];
-              return (
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <Pressable onPress={() => {}} style={{ backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 34, gap: 12 }}>
+              {openHangout && (
                 <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: c?.color ?? '#999' }} />
-                    <Text style={{ fontSize: 12, color: '#888' }}>{c?.name} · {openHangout.date}</Text>
+                  <Text style={{ fontSize: 12, color: '#888' }}>{openHangout.date}</Text>
+
+                  <TextInput
+                    placeholder="what did you do?"
+                    value={editTitle}
+                    onChangeText={setEditTitle}
+                    style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 }}
+                  />
+                  <TextInput
+                    placeholder="who was there / notes"
+                    value={editNote}
+                    onChangeText={setEditNote}
+                    style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 }}
+                  />
+
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {circles.map((c) => {
+                      const on = editCircle === c.id;
+                      return (
+                        <Pressable key={c.id} onPress={() => setEditCircle(c.id)}
+                          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1.5, borderColor: c.color, backgroundColor: on ? c.color : 'transparent' }}>
+                          <Text style={{ color: on ? '#fff' : '#333', fontSize: 13 }}>{c.name}</Text>
+                        </Pressable>
+                      );
+                    })}
                   </View>
-                  <Text style={{ fontSize: 20, fontWeight: '600' }}>{openHangout.title}</Text>
-                  {openHangout.note ? <Text style={{ fontSize: 15, color: '#444' }}>{openHangout.note}</Text> : null}
 
-                  <Text style={{ fontSize: 13, color: '#aaa', marginTop: 6 }}>Photos will go here</Text>
+                  <Text style={{ fontSize: 13, color: '#aaa', marginTop: 4 }}>Photos will go here</Text>
 
-                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
                     <Pressable onPress={removeHangout} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
                       <Text style={{ color: '#c0392b' }}>Delete</Text>
                     </Pressable>
-                    <Pressable onPress={() => setOpenHangout(null)} style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}>
-                      <Text style={{ color: '#fff', fontWeight: '600' }}>Done</Text>
+                    <View style={{ flex: 1 }} />
+                    <Pressable onPress={() => setOpenHangout(null)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+                      <Text style={{ color: '#666' }}>Cancel</Text>
+                    </Pressable>
+                    <Pressable onPress={saveEdits} style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}>
+                      <Text style={{ color: '#fff', fontWeight: '600' }}>Save</Text>
                     </Pressable>
                   </View>
                 </>
-              );
-            })()}
-          </Pressable>
+              )}
+            </Pressable>
+          </KeyboardAvoidingView>
         </Pressable>
       </Modal>
     </View>
