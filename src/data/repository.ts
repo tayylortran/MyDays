@@ -1,4 +1,4 @@
-import { Circle, Hangout } from './types';
+import { Circle, Hangout, Photo } from './types';
 
 export interface Repository {
   listCircles(): Promise<Circle[]>;
@@ -8,4 +8,8 @@ export interface Repository {
   listHangouts(month: string): Promise<Hangout[]>;
   saveHangout(h: Hangout): Promise<void>;
   deleteHangout(id: string): Promise<void>;
+
+  addPhoto(hangoutId: string, pickedUri: string): Promise<Photo>;
+  listPhotos(hangoutId: string): Promise<Photo[]>;
+  deletePhoto(id: string): Promise<void>;
 }

@@ -19,7 +19,7 @@ export interface Photo {
     id: string;
     hangoutId: string;
     uri: string;
-    thumbUri: string;
+    thumbUri?: string;
     sort: number;
     updatedAt: number;
 }
