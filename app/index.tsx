@@ -1,9 +1,12 @@
 import { useRepo } from '@/src/data/RepositoryProvider';
-import { Circle, Hangout } from '@/src/data/types';
+import { Circle, Hangout, Photo } from '@/src/data/types';
 import { monthGrid, MONTHS, WEEKDAYS } from '@/src/lib/dates';
 import { newId } from '@/src/lib/id';
+import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+
+const MAX_PHOTOS = 5;
 
 export default function Home() {
   const repo = useRepo();
@@ -28,6 +31,7 @@ export default function Home() {
   const [editTitle, setEditTitle] = useState('');
   const [editNote, setEditNote] = useState('');
   const [editCircle, setEditCircle] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const load = useCallback(async () => {
     setCircles(await repo.listCircles());
@@ -93,11 +97,12 @@ export default function Home() {
     }
   };
 
-  const openDetail = (h: Hangout) => {
+  const openDetail = async (h: Hangout) => {
     setOpenHangout(h);
     setEditTitle(h.title);
     setEditNote(h.note);
     setEditCircle(h.circleId);
+    setPhotos(await repo.listPhotos(h.id));
   };
 
   const saveEdits = async () => {
@@ -112,6 +117,29 @@ export default function Home() {
     });
     setOpenHangout(null);
     await load();
+  };
+
+  const pickPhoto = async () => {
+    if (!openHangout) return;
+    if (photos.length >= MAX_PHOTOS) { Alert.alert('Photo limit', `Up to ${MAX_PHOTOS} photos per hangout.`); return; }
+
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert('Photo access needed', 'Enable photo access in Settings to add photos.'); return; }
+
+    const result = await ImagePicker.launchImageLibraryAsync({ quality: 1 });
+    if (result.canceled) return;
+
+    try {
+      await repo.addPhoto(openHangout.id, result.assets[0].uri);
+      setPhotos(await repo.listPhotos(openHangout.id));
+    } catch (e: any) {
+      Alert.alert('Could not add photo', String(e?.message ?? e));
+    }
+  };
+
+  const removePhoto = async (id: string) => {
+    await repo.deletePhoto(id);
+    if (openHangout) setPhotos(await repo.listPhotos(openHangout.id));
   };
 
   const removeHangout = async () => {
@@ -259,7 +287,19 @@ export default function Home() {
                     })}
                   </View>
 
-                  <Text style={{ fontSize: 13, color: '#aaa', marginTop: 4 }}>Photos will go here</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                    {photos.map((p) => (
+                      <Pressable key={p.id} onLongPress={() => removePhoto(p.id)}>
+                        <Image source={{ uri: p.uri }} style={{ width: 78, height: 78, borderRadius: 8 }} />
+                      </Pressable>
+                    ))}
+                    {photos.length < MAX_PHOTOS && (
+                      <Pressable onPress={pickPhoto} style={{ width: 78, height: 78, borderRadius: 8, borderWidth: 1.5, borderColor: '#ccc', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 28, color: '#bbb' }}>+</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                  <Text style={{ fontSize: 11, color: '#bbb' }}>{photos.length}/{MAX_PHOTOS} photos · long-press to remove</Text>
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
                     <Pressable onPress={removeHangout} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
