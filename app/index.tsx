@@ -1,54 +1,71 @@
 import { useRepo } from '@/src/data/RepositoryProvider';
 import { Circle, Hangout } from '@/src/data/types';
-import { monthKey, todayISODate } from '@/src/lib/dates';
-import { newId } from '@/src/lib/id';
-import { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { monthGrid, MONTHS, WEEKDAYS } from '@/src/lib/dates';
+import { useCallback, useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 export default function Home() {
   const repo = useRepo();
-  const [circles, setCircles] = useState<Circle[]>([]);
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
   const [hangouts, setHangouts] = useState<Hangout[]>([]);
+  const [circleById, setCircleById] = useState<Record<string, Circle>>({});
 
-  useEffect(() => {
-    (async () => {
-      let cs = await repo.listCircles();
-      if (cs.length === 0) {
-        await repo.saveCircle({ id: newId(), name: 'close friends', color: '#E8674C', sort: await repo.nextCircleSort(), updatedAt: Date.now() });
-        await repo.saveCircle({ id: newId(), name: 'family', color: '#E0A73E', sort: await repo.nextCircleSort(), updatedAt: Date.now() });
-        cs = await repo.listCircles();
-      }
-      setCircles(cs);
+  const load = useCallback(async () => {
+    const cs = await repo.listCircles();
+    const map: Record<string, Circle> = {};
+    cs.forEach((c) => (map[c.id] = c));
+    setCircleById(map);
+    const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+    setHangouts(await repo.listHangouts(key));
+  }, [repo, year, month]);
 
-      const month = monthKey(todayISODate());
-      let hs = await repo.listHangouts(month);
-      if (hs.length === 0 && cs.length > 0) {
-        await repo.saveHangout({ id: newId(), date: todayISODate(), title: 'coffee at starbucks', note: 'with sam', circleId: cs[0].id, updatedAt: Date.now() });
-        hs = await repo.listHangouts(month);
-      }
-      setHangouts(hs);
-    })();
-  }, []);
+  useEffect(() => { load(); }, [load]);
 
-  const circleById: Record<string, Circle> = {};
-  circles.forEach((c) => (circleById[c.id] = c));
+  const byDate: Record<string, Hangout[]> = {};
+  hangouts.forEach((h) => { (byDate[h.date] ||= []).push(h); });
+
+  const prev = () => { if (month === 0) { setYear(year - 1); setMonth(11); } else setMonth(month - 1); };
+  const next = () => { if (month === 11) { setYear(year + 1); setMonth(0); } else setMonth(month + 1); };
+
+  // split the flat cell list into weeks of 7
+  const cells = monthGrid(year, month);
+  const weeks: (string | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 80, gap: 20 }}>
-      <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 18, fontWeight: '600' }}>Circles</Text>
-        {circles.map((c) => (
-          <Text key={c.id} style={{ color: c.color }}>● {c.name}</Text>
+    <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <Pressable onPress={prev} hitSlop={12}><Text style={{ fontSize: 26 }}>‹</Text></Pressable>
+        <Text style={{ fontSize: 20, fontWeight: '600' }}>{MONTHS[month]} {year}</Text>
+        <Pressable onPress={next} hitSlop={12}><Text style={{ fontSize: 26 }}>›</Text></Pressable>
+      </View>
+
+      <View style={{ flexDirection: 'row' }}>
+        {WEEKDAYS.map((w, i) => (
+          <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#999', fontSize: 12 }}>{w}</Text>
         ))}
       </View>
-      <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 18, fontWeight: '600' }}>This month</Text>
-        {hangouts.length === 0 && <Text style={{ color: '#999' }}>no hangouts yet</Text>}
-        {hangouts.map((h) => {
-          const c = circleById[h.circleId];
-          return <Text key={h.id} style={{ color: c?.color }}>{h.date} — {h.title} ({c?.name})</Text>;
-        })}
-      </View>
-    </ScrollView>
+
+      {weeks.map((week, wi) => (
+        <View key={wi} style={{ flexDirection: 'row' }}>
+          {week.map((date, di) => (
+            <View key={di} style={{ flex: 1, aspectRatio: 0.85, padding: 3 }}>
+              {date && (
+                <View style={{ flex: 1, borderRadius: 8, backgroundColor: '#f4f2ee', padding: 4 }}>
+                  <Text style={{ fontSize: 11, color: '#666' }}>{Number(date.slice(8))}</Text>
+                  {(byDate[date] || []).map((h) => (
+                    <View key={h.id} style={{ backgroundColor: (circleById[h.circleId]?.color ?? '#999') + '33', borderRadius: 4, paddingHorizontal: 3, paddingVertical: 1, marginTop: 2 }}>
+                      <Text numberOfLines={1} style={{ fontSize: 9 }}>{h.title}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
+      ))}
+    </View>
   );
 }
