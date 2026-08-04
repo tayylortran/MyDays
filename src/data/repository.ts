@@ -7,4 +7,5 @@ export interface Repository {
 
   listHangouts(month: string): Promise<Hangout[]>;
   saveHangout(h: Hangout): Promise<void>;
+  deleteHangout(id: string): Promise<void>;
 }

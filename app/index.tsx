@@ -12,6 +12,7 @@ export default function Home() {
   const [month, setMonth] = useState(today.getMonth());
   const [circles, setCircles] = useState<Circle[]>([]);
   const [hangouts, setHangouts] = useState<Hangout[]>([]);
+  const [openHangout, setOpenHangout] = useState<Hangout | null>(null);
 
   // add-hangout modal state
   const [openDate, setOpenDate] = useState<string | null>(null);
@@ -85,6 +86,13 @@ export default function Home() {
     }
   };
 
+  const removeHangout = async () => {
+    if (!openHangout) return;
+    await repo.deleteHangout(openHangout.id);
+    setOpenHangout(null);
+    await load();
+  };
+
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
@@ -111,9 +119,9 @@ export default function Home() {
                 <Pressable onPress={() => openAdd(date)} style={{ flex: 1, borderRadius: 8, backgroundColor: '#f4f2ee', padding: 4 }}>
                   <Text style={{ fontSize: 11, color: '#666' }}>{Number(date.slice(8))}</Text>
                   {(byDate[date] || []).map((h) => (
-                    <View key={h.id} style={{ backgroundColor: (circleById[h.circleId]?.color ?? '#999') + '33', borderRadius: 4, paddingHorizontal: 3, paddingVertical: 1, marginTop: 2 }}>
+                    <Pressable key={h.id} onPress={() => setOpenHangout(h)} style={{ backgroundColor: (circleById[h.circleId]?.color ?? '#999') + '33', borderRadius: 4, paddingHorizontal: 3, paddingVertical: 1, marginTop: 2 }}>
                       <Text numberOfLines={1} style={{ fontSize: 9 }}>{h.title}</Text>
-                    </View>
+                    </Pressable>
                   ))}
                 </Pressable>
               )}
@@ -180,6 +188,38 @@ export default function Home() {
               </View>
             </Pressable>
           </KeyboardAvoidingView>
+        </Pressable>
+      </Modal>
+
+      {/* hangout detail bottom sheet */}
+      <Modal visible={openHangout !== null} transparent animationType="slide" onRequestClose={() => setOpenHangout(null)}>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} onPress={() => setOpenHangout(null)}>
+          <Pressable onPress={() => {}} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 34, gap: 12 }}>
+            {openHangout && (() => {
+              const c = circleById[openHangout.circleId];
+              return (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: c?.color ?? '#999' }} />
+                    <Text style={{ fontSize: 12, color: '#888' }}>{c?.name} · {openHangout.date}</Text>
+                  </View>
+                  <Text style={{ fontSize: 20, fontWeight: '600' }}>{openHangout.title}</Text>
+                  {openHangout.note ? <Text style={{ fontSize: 15, color: '#444' }}>{openHangout.note}</Text> : null}
+
+                  <Text style={{ fontSize: 13, color: '#aaa', marginTop: 6 }}>Photos will go here</Text>
+
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+                    <Pressable onPress={removeHangout} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+                      <Text style={{ color: '#c0392b' }}>Delete</Text>
+                    </Pressable>
+                    <Pressable onPress={() => setOpenHangout(null)} style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}>
+                      <Text style={{ color: '#fff', fontWeight: '600' }}>Done</Text>
+                    </Pressable>
+                  </View>
+                </>
+              );
+            })()}
+          </Pressable>
         </Pressable>
       </Modal>
     </View>

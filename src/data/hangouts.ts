@@ -34,3 +34,8 @@ export async function listHangouts(month: string): Promise<Hangout[]> {
     updatedAt: r.updated_at,
   }));
 }
+
+export async function deleteHangout(id: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`DELETE FROM hangouts WHERE id = ?`, [id]);
+}
