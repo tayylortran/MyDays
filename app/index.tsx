@@ -1,3 +1,4 @@
+import { AddHangoutModal } from '@/src/features/hangouts/AddHangoutModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
 import { monthGrid, MONTHS, WEEKDAYS } from '@/src/lib/dates';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
@@ -53,7 +54,7 @@ export default function Home() {
                       key={h.id}
                       onPress={() => calendar.openDetail(h)}
                       style={{
-                        backgroundColor: (calendar.circleById[h.circleId]?.color ?? '#999') + '33',
+                        backgroundColor: `${calendar.circleById[h.circleId]?.color ?? '#999'}33`,
                         borderRadius: 4,
                         paddingHorizontal: 3,
                         paddingVertical: 1,
@@ -72,114 +73,23 @@ export default function Home() {
         </View>
       ))}
 
-      <Modal
-        visible={calendar.openDate !== null}
-        transparent
-        animationType="slide"
-        onRequestClose={calendar.closeAdd}
-      >
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} onPress={calendar.closeAdd}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={{ flex: 1, justifyContent: 'flex-end' }}
-          >
-            <Pressable
-              onPress={() => {}}
-              style={{
-                backgroundColor: '#fff',
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                padding: 20,
-                paddingBottom: 34,
-                gap: 14,
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: '600' }}>
-                New hangout · {calendar.openDate}
-              </Text>
-
-              <TextInput
-                autoFocus
-                placeholder="what did you do?"
-                value={calendar.title}
-                onChangeText={calendar.setTitle}
-                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 }}
-              />
-
-              <TextInput
-                placeholder="who was there / notes (optional)"
-                value={calendar.note}
-                onChangeText={calendar.setNote}
-                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 }}
-              />
-
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                {calendar.circles.map((c) => {
-                  const on = calendar.pickedCircle === c.id;
-                  return (
-                    <Pressable
-                      key={c.id}
-                      onPress={() => calendar.setPickedCircle(c.id)}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 999,
-                        borderWidth: 1.5,
-                        borderColor: c.color,
-                        backgroundColor: on ? c.color : 'transparent',
-                      }}
-                    >
-                      <Text style={{ color: on ? '#fff' : '#333', fontSize: 13 }}>{c.name}</Text>
-                    </Pressable>
-                  );
-                })}
-
-                <Pressable
-                  onPress={() => calendar.setAddingCircle(true)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 999,
-                    borderWidth: 1.5,
-                    borderColor: '#bbb',
-                    borderStyle: 'dashed',
-                  }}
-                >
-                  <Text style={{ color: '#777', fontSize: 13 }}>+ circle</Text>
-                </Pressable>
-              </View>
-
-              {calendar.addingCircle && (
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <TextInput
-                    autoFocus
-                    placeholder="circle name"
-                    value={calendar.newCircleName}
-                    onChangeText={calendar.setNewCircleName}
-                    onSubmitEditing={calendar.createCircle}
-                    style={{ flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14 }}
-                  />
-                  <Pressable
-                    onPress={calendar.createCircle}
-                    style={{ paddingHorizontal: 14, justifyContent: 'center', borderRadius: 10, backgroundColor: '#333' }}
-                  >
-                    <Text style={{ color: '#fff' }}>Save</Text>
-                  </Pressable>
-                </View>
-              )}
-
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
-                <Pressable onPress={calendar.closeAdd} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                  <Text style={{ color: '#666' }}>Cancel</Text>
-                </Pressable>
-                <Pressable onPress={calendar.submit} style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}>
-                  <Text style={{ color: '#fff', fontWeight: '600' }}>Add</Text>
-                </Pressable>
-              </View>
-            </Pressable>
-          </KeyboardAvoidingView>
-        </Pressable>
-      </Modal>
+      <AddHangoutModal
+        openDate={calendar.openDate}
+        title={calendar.title}
+        note={calendar.note}
+        pickedCircle={calendar.pickedCircle}
+        addingCircle={calendar.addingCircle}
+        newCircleName={calendar.newCircleName}
+        circles={calendar.circles}
+        onClose={calendar.closeAdd}
+        onChangeTitle={calendar.setTitle}
+        onChangeNote={calendar.setNote}
+        onPickCircle={calendar.setPickedCircle}
+        onStartAddCircle={() => calendar.setAddingCircle(true)}
+        onChangeNewCircleName={calendar.setNewCircleName}
+        onCreateCircle={calendar.createCircle}
+        onSubmit={calendar.submit}
+      />
 
       <Modal
         visible={calendar.openHangout !== null}
