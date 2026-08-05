@@ -1,28 +1,21 @@
 import { CalendarGrid } from '@/src/features/calendar/CalendarGrid';
+import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { AddHangoutModal } from '@/src/features/hangouts/AddHangoutModal';
 import { HangoutDetailModal } from '@/src/features/hangouts/HangoutDetailModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
-import { MONTHS } from '@/src/lib/dates';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 export default function Home() {
   const calendar = useCalendarScreen();
 
   return (
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Pressable onPress={calendar.prev} hitSlop={12}>
-          <Text style={{ fontSize: 26 }}>{'<'}</Text>
-        </Pressable>
-
-        <Text style={{ fontSize: 20, fontWeight: '600' }}>
-          {MONTHS[calendar.month]} {calendar.year}
-        </Text>
-
-        <Pressable onPress={calendar.next} hitSlop={12}>
-          <Text style={{ fontSize: 26 }}>{'>'}</Text>
-        </Pressable>
-      </View>
+      <MonthHeader
+        month={calendar.month}
+        year={calendar.year}
+        onPrev={calendar.prev}
+        onNext={calendar.next}
+      />
 
       <CalendarGrid
         year={calendar.year}
