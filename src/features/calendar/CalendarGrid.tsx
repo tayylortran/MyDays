@@ -37,13 +37,11 @@ export function CalendarGrid({
   }
 
   function getTitleTextStyle(title: string) {
-    const trimmedTitle = title.trim();
-    const hasMultipleWords = /\s/.test(trimmedTitle);
-    const isLongSingleWord = !hasMultipleWords && trimmedTitle.length > 10;
+    const hasMultipleWords = /\s/.test(title.trim());
 
     return {
       numberOfLines: hasMultipleWords ? 2 : 1,
-      fontSize: isLongSingleWord ? 8 : 9,
+      fontSize: 9,
       lineHeight: hasMultipleWords ? 11 : undefined,
     };
   }
