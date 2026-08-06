@@ -14,6 +14,7 @@ export function ProfileCalendarGrid({
   faces,
   onPressDay,
 }: ProfileCalendarGridProps) {
+  const dayCellAspectRatio = 0.8;
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
 
@@ -34,7 +35,7 @@ export function ProfileCalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, aspectRatio: 0.7, padding: 2 }}>
+            <View key={di} style={{ flex: 1, aspectRatio: dayCellAspectRatio, padding: 2 }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}

@@ -9,7 +9,7 @@ export default function Home() {
   const calendar = useCalendarScreen();
 
   return (
-    <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 12 }}>
+    <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
       <MonthHeader
         month={calendar.month}
         year={calendar.year}

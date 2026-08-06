@@ -19,6 +19,7 @@ export function CalendarGrid({
   onPressDay,
   onPressHangout,
 }: CalendarGridProps) {
+  const dayCellAspectRatio = 0.8;
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
 
@@ -39,7 +40,7 @@ export function CalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, aspectRatio: 0.7, padding: 3 }}>
+            <View key={di} style={{ flex: 1, aspectRatio: dayCellAspectRatio, padding: 3 }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}

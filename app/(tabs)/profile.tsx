@@ -8,7 +8,7 @@ export default function Profile() {
   const profile = useProfileScreen();
 
   return (
-    <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 12 }}>
+    <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
       <MonthHeader
         month={profile.month}
         year={profile.year}
