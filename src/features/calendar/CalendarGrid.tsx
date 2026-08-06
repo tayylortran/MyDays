@@ -1,6 +1,6 @@
 import { Circle, Hangout } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 type CalendarGridProps = {
   year: number;
@@ -27,7 +27,7 @@ export function CalendarGrid({
   }
 
   return (
-    <>
+    <ScrollView showsVerticalScrollIndicator={false}>
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAYS.map((w, i) => (
           <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#999', fontSize: 12 }}>
@@ -39,7 +39,7 @@ export function CalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, aspectRatio: 0.85, padding: 3 }}>
+            <View key={di} style={{ flex: 1, aspectRatio: 0.7, padding: 3 }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
@@ -70,6 +70,6 @@ export function CalendarGrid({
           ))}
         </View>
       ))}
-    </>
+    </ScrollView>
   );
 }

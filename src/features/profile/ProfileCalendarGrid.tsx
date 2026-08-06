@@ -1,5 +1,5 @@
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 
 type ProfileCalendarGridProps = {
   year: number;
@@ -22,7 +22,7 @@ export function ProfileCalendarGrid({
   }
 
   return (
-    <>
+    <ScrollView showsVerticalScrollIndicator={false}>
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAYS.map((w, i) => (
           <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#999', fontSize: 12 }}>
@@ -34,14 +34,18 @@ export function ProfileCalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, aspectRatio: 0.85, padding: 2 }}>
+            <View key={di} style={{ flex: 1, aspectRatio: 0.7, padding: 2 }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
                   style={{ flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee' }}
                 >
                   {faces[date] ? (
-                    <Image source={{ uri: faces[date] }} style={{ flex: 1 }} />
+                    <Image
+                      source={{ uri: faces[date] }}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                    />
                   ) : (
                     <Text style={{ fontSize: 11, color: '#bbb', padding: 4 }}>{Number(date.slice(8))}</Text>
                   )}
@@ -51,6 +55,6 @@ export function ProfileCalendarGrid({
           ))}
         </View>
       ))}
-    </>
+    </ScrollView>
   );
 }
