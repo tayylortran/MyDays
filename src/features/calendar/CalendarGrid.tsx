@@ -36,6 +36,18 @@ export function CalendarGrid({
     setCalendarHeight(event.nativeEvent.layout.height);
   }
 
+  function getTitleTextStyle(title: string) {
+    const trimmedTitle = title.trim();
+    const hasMultipleWords = /\s/.test(trimmedTitle);
+    const isLongSingleWord = !hasMultipleWords && trimmedTitle.length > 10;
+
+    return {
+      numberOfLines: hasMultipleWords ? 2 : 1,
+      fontSize: isLongSingleWord ? 8 : 9,
+      lineHeight: hasMultipleWords ? 11 : undefined,
+    };
+  }
+
   return (
     <View style={{ flex: 1 }} onLayout={handleLayout}>
       <ScrollView
@@ -69,11 +81,17 @@ export function CalendarGrid({
                         backgroundColor: `${circleById[h.circleId]?.color ?? '#999'}33`,
                         borderRadius: 4,
                         paddingHorizontal: 3,
-                        paddingVertical: 1,
+                        paddingVertical: 2,
                         marginTop: 2,
                       }}
                     >
-                      <Text numberOfLines={1} style={{ fontSize: 9 }}>
+                      <Text
+                        numberOfLines={getTitleTextStyle(h.title).numberOfLines}
+                        style={{
+                          fontSize: getTitleTextStyle(h.title).fontSize,
+                          lineHeight: getTitleTextStyle(h.title).lineHeight,
+                        }}
+                      >
                         {h.title}
                       </Text>
                     </Pressable>
