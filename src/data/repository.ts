@@ -12,4 +12,8 @@ export interface Repository {
   addPhoto(hangoutId: string, pickedUri: string): Promise<Photo>;
   listPhotos(hangoutId: string): Promise<Photo[]>;
   deletePhoto(id: string): Promise<void>;
+
+  listPhotosForDate(date: string): Promise<Photo[]>;
+  faceUrisForMonth(month: string): Promise<Record<string, string>>;
+  setDayFace(date: string, photoId: string): Promise<void>;
 }

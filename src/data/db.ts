@@ -40,6 +40,12 @@ async function init(): Promise<SQLite.SQLiteDatabase> {
       updated_at INTEGER NOT NULL
     );
 
+      CREATE TABLE IF NOT EXISTS day_faces (
+      date       TEXT PRIMARY KEY NOT NULL,
+      photo_id   TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_hangouts_date  ON hangouts(date);
     CREATE INDEX IF NOT EXISTS idx_photos_hangout ON photos(hangout_id);
   `);

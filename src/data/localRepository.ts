@@ -1,7 +1,9 @@
 import * as circles from './circles';
 import * as hangouts from './hangouts';
 import * as photos from './photos';
+import * as profile from './profile';
 import { Repository } from './repository';
+
 
 export const localRepository: Repository = {
   listCircles: circles.listCircles,
@@ -13,4 +15,8 @@ export const localRepository: Repository = {
   addPhoto: photos.addPhoto,
   listPhotos: photos.listPhotos,
   deletePhoto: photos.deletePhoto,
+  listPhotosForDate: profile.listPhotosForDate,
+  faceUrisForMonth: profile.faceUrisForMonth,
+  setDayFace: profile.setDayFace,
+  
 };
