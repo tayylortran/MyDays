@@ -1,6 +1,7 @@
 import { Circle, Hangout } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { LayoutChangeEvent, Pressable, ScrollView, Text, View } from 'react-native';
 
 type CalendarGridProps = {
   year: number;
@@ -19,17 +20,29 @@ export function CalendarGrid({
   onPressDay,
   onPressHangout,
 }: CalendarGridProps) {
-  const dayCellAspectRatio = 0.8;
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
+  const [calendarHeight, setCalendarHeight] = useState(0);
+  const weekdayRowHeight = 20;
 
   for (let i = 0; i < cells.length; i += 7) {
     weeks.push(cells.slice(i, i + 7));
   }
 
+  const dayCellHeight =
+    calendarHeight > weekdayRowHeight ? (calendarHeight - weekdayRowHeight) / 6 : undefined;
+
+  function handleLayout(event: LayoutChangeEvent) {
+    setCalendarHeight(event.nativeEvent.layout.height);
+  }
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <View style={{ flexDirection: 'row' }}>
+    <View style={{ flex: 1 }} onLayout={handleLayout}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+      <View style={{ flexDirection: 'row', height: weekdayRowHeight, alignItems: 'center' }}>
         {WEEKDAYS.map((w, i) => (
           <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#999', fontSize: 12 }}>
             {w}
@@ -40,7 +53,7 @@ export function CalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, aspectRatio: dayCellAspectRatio, padding: 3 }}>
+            <View key={di} style={{ flex: 1, height: dayCellHeight, minHeight: 72, padding: 3 }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
@@ -71,6 +84,7 @@ export function CalendarGrid({
           ))}
         </View>
       ))}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
