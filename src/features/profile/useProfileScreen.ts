@@ -58,10 +58,18 @@ export function useProfileScreen() {
     await load();
   };
 
+  const gridPhotos = Object.entries(faces)
+  .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+  .map(([date, uri]) => ({
+    date,
+    uri,
+  }));
+
   return {
     year,
     month,
     faces,
+    gridPhotos,
     openDate,
     dayPhotos,
     viewMode,

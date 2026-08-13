@@ -1,6 +1,7 @@
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { ChooseDayFaceModal } from '@/src/features/profile/ChooseDayFaceModal';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
+import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
 import { ProfileViewSwitcher } from '@/src/features/profile/ProfileViewSwitcher';
 import { useProfileScreen } from '@/src/features/profile/useProfileScreen';
 import { Text, View } from 'react-native';
@@ -52,22 +53,10 @@ export default function Profile() {
           onPressDay={profile.openDay}
         />
       ) : (
-        <View
-          style={{
-            borderRadius: 12,
-            backgroundColor: '#f4f2ee',
-            padding: 20,
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 6 }}>
-            Grid view
-          </Text>
-          <Text style={{ color: '#777' }}>
-            Your selected month photos will go here.
-          </Text>
-        </View>
-      )}
+        <ProfilePhotoGrid photos={profile.gridPhotos} />
+    )}
+
+
 
       <ChooseDayFaceModal
         openDate={profile.openDate}
