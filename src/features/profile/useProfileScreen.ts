@@ -11,6 +11,7 @@ export function useProfileScreen() {
   const [faces, setFaces] = useState<Record<string, string>>({});
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [dayPhotos, setDayPhotos] = useState<Photo[]>([]);
+  const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar');
 
   const load = useCallback(async () => {
     const key = `${year}-${String(month + 1).padStart(2, '0')}`;
@@ -63,6 +64,8 @@ export function useProfileScreen() {
     faces,
     openDate,
     dayPhotos,
+    viewMode,
+    setViewMode,
     prev,
     next,
     openDay,
