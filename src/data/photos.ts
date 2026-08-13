@@ -66,6 +66,6 @@ export async function deletePhoto(id: string): Promise<void> {
     if (row?.uri) {
     try { new File(row.uri).delete(); } catch {}
   }
-
+  await db.runAsync(`DELETE FROM day_faces WHERE photo_id = ?`, [id]);
   await db.runAsync(`DELETE FROM photos WHERE id = ?`, [id]);
 }

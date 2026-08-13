@@ -37,5 +37,13 @@ export async function listHangouts(month: string): Promise<Hangout[]> {
 
 export async function deleteHangout(id: string): Promise<void> {
   const db = await getDb();
+  await db.runAsync(
+  `DELETE FROM day_faces
+   WHERE photo_id IN (
+     SELECT id FROM photos WHERE hangout_id = ?
+   )`,
+  [id]
+  );
+  
   await db.runAsync(`DELETE FROM hangouts WHERE id = ?`, [id]);
 }

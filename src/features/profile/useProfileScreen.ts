@@ -1,5 +1,6 @@
 import { useRepo } from '@/src/data/RepositoryProvider';
 import { Photo } from '@/src/data/types';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useProfileScreen() {
@@ -21,6 +22,12 @@ export function useProfileScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   const prev = () => {
     if (month === 0) {
