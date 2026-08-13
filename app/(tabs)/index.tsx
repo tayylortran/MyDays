@@ -6,18 +6,19 @@ import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
 import { View } from 'react-native';
 
 export default function Home() {
-  const calendar = useCalendarScreen();
+  const calendar = useCalendarScreen(); //calls the brain and stores everything it hands back as a variable called calendar. 
+  //it holds all the actions and data for this screen. 
 
   return (
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
-      <MonthHeader
-        month={calendar.month}
+      <MonthHeader //component
+        month={calendar.month} //"passing props".
         year={calendar.year}
         onPrev={calendar.prev}
         onNext={calendar.next}
       />
 
-      <CalendarGrid
+      <CalendarGrid //component
         year={calendar.year}
         month={calendar.month}
         byDate={calendar.byDate}
@@ -26,7 +27,7 @@ export default function Home() {
         onPressHangout={calendar.openDetail}
       />
 
-      <AddHangoutModal
+      <AddHangoutModal //component
         openDate={calendar.openDate}
         title={calendar.title}
         note={calendar.note}
@@ -44,7 +45,7 @@ export default function Home() {
         onSubmit={calendar.submit}
       />
 
-      <HangoutDetailModal
+      <HangoutDetailModal //component
         openHangout={calendar.openHangout}
         editTitle={calendar.editTitle}
         editNote={calendar.editNote}
