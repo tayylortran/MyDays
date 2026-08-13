@@ -53,10 +53,10 @@ export default function Profile() {
           onPressDay={profile.openDay}
         />
       ) : (
-        <ProfilePhotoGrid photos={profile.gridPhotos} />
+        <View style={{ marginHorizontal: -8 }}>
+          <ProfilePhotoGrid photos={profile.gridPhotos} />
+        </View>
     )}
-
-
 
       <ChooseDayFaceModal
         openDate={profile.openDate}
