@@ -29,6 +29,8 @@ export function useCalendarScreen() {
   const [editNote, setEditNote] = useState('');
   const [editCircle, setEditCircle] = useState<string | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [editingCircle, setEditingCircle] = useState<Circle | null>(null);
+  const [creatingCircle, setCreatingCircle] = useState(false);
 
   const load = useCallback(async () => {
     setCircles(await repo.listCircles());
@@ -244,5 +246,9 @@ export function useCalendarScreen() {
     pickPhoto,
     removePhoto,
     removeHangout,
+    editingCircle,
+    creatingCircle,
+    setEditingCircle,
+    setCreatingCircle,
   };
 }

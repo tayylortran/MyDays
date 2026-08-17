@@ -1,9 +1,10 @@
 import { CalendarGrid } from '@/src/features/calendar/CalendarGrid';
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { AddHangoutModal } from '@/src/features/hangouts/AddHangoutModal';
+import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
 import { HangoutDetailModal } from '@/src/features/hangouts/HangoutDetailModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 export default function Home() {
   const calendar = useCalendarScreen(); //calls the brain and stores everything it hands back as a variable called calendar. 
@@ -29,23 +30,28 @@ export default function Home() {
         }}
       >
         {calendar.circles.map((c) => (
-          <View
+          <Pressable
             key={c.id}
+            onPress={() => calendar.setEditingCircle(c)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
           >
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: c.color,
-            }}
-          />
-          <Text style={{ fontSize: 12, color: '#555' }}>
-            {c.name}
-          </Text>
-        </View>
+            <View
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: c.color,
+              }}
+            />
+            <Text style={{ fontSize: 12, color: '#555' }}>
+              {c.name}
+            </Text>
+          </Pressable>
         ))}
+
+        <Pressable onPress={() => calendar.setCreatingCircle(true)}>
+          <Text style={{ fontSize: 18, color: '#555' }}>+</Text>
+        </Pressable>
       </View>
 
       <CalendarGrid //component
@@ -90,6 +96,15 @@ export default function Home() {
         onRemovePhoto={calendar.removePhoto}
         onRemoveHangout={calendar.removeHangout}
         onSave={calendar.saveEdits}
+      />
+
+      <EditCircleModal
+        editingCircle={calendar.editingCircle}
+        creatingCircle={calendar.creatingCircle}
+        onClose={() => {
+          calendar.setEditingCircle(null);
+          calendar.setCreatingCircle(false);
+        }}
       />
     </View>
   );
