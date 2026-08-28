@@ -1,4 +1,4 @@
-import { Circle, Hangout, Photo } from './types';
+import { Circle, Hangout, Photo, ProfileSettings } from './types';
 
 export interface Repository {
   listCircles(): Promise<Circle[]>;
@@ -16,4 +16,6 @@ export interface Repository {
   listPhotosForDate(date: string): Promise<Photo[]>;
   faceUrisForMonth(month: string): Promise<Record<string, string>>;
   setDayFace(date: string, photoId: string): Promise<void>;
+  getProfileSettings(): Promise<ProfileSettings>;
+  saveProfileSettings(settings: ProfileSettings): Promise<void>;
 }

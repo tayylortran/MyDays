@@ -40,9 +40,16 @@ async function init(): Promise<SQLite.SQLiteDatabase> {
       updated_at INTEGER NOT NULL
     );
 
-      CREATE TABLE IF NOT EXISTS day_faces (
+    CREATE TABLE IF NOT EXISTS day_faces (
       date       TEXT PRIMARY KEY NOT NULL,
       photo_id   TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS profile_settings (
+      id         INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
+      username   TEXT NOT NULL DEFAULT '',
+      photo_uri  TEXT,
       updated_at INTEGER NOT NULL
     );
 

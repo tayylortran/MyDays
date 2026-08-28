@@ -1,5 +1,5 @@
 import { getDb } from './db';
-import { Photo } from './types';
+import { Photo, ProfileSettings } from './types';
 
 // all photos taken on a given date, across every hangout that day
 export async function listPhotosForDate(date: string): Promise<Photo[]> {
@@ -39,5 +39,31 @@ export async function setDayFace(date: string, photoId: string): Promise<void> {
     `INSERT INTO day_faces (date, photo_id, updated_at) VALUES (?, ?, ?)
      ON CONFLICT(date) DO UPDATE SET photo_id = excluded.photo_id, updated_at = excluded.updated_at`,
     [date, photoId, Date.now()]
+  );
+}
+
+export async function getProfileSettings(): Promise<ProfileSettings> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<any>(
+    `SELECT username, photo_uri
+     FROM profile_settings
+     WHERE id = 1`
+  );
+
+  return {
+    username: row?.username ?? '',
+    photoUri: row?.photo_uri ?? null,
+  };
+}
+
+export async function saveProfileSettings(settings: ProfileSettings): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO profile_settings (id, username, photo_uri, updated_at) VALUES (1, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       username = excluded.username,
+       photo_uri = excluded.photo_uri,
+       updated_at = excluded.updated_at`,
+    [settings.username, settings.photoUri, Date.now()]
   );
 }

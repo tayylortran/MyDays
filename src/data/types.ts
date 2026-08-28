@@ -23,3 +23,8 @@ export interface Photo {
     sort: number;
     updatedAt: number;
 }
+
+export interface ProfileSettings {
+    username: string;
+    photoUri: string | null;
+}
