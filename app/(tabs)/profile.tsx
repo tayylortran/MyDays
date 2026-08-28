@@ -12,7 +12,7 @@ export default function Profile() {
   const profile = useProfileScreen();
 
   return (
-    <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
+    <View style={{ flex: 1, paddingTop: 54, paddingHorizontal: 8 }}>
       <View style={{ alignItems: 'flex-end', marginBottom: 12 }}>
         <Pressable onPress={profile.openSettings} hitSlop={12}>
           <Ionicons name="settings-outline" size={22} color="#333" />
@@ -24,7 +24,7 @@ export default function Profile() {
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          marginBottom: 60,
+          marginBottom: 40,
         }}
       >
         {profile.photoUri ? (
