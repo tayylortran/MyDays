@@ -1,14 +1,12 @@
 import { useRepo } from '@/src/data/RepositoryProvider';
+import { useCalendarMonth } from '@/src/features/calendar/CalendarMonthProvider';
 import { Photo } from '@/src/data/types';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useProfileScreen() {
   const repo = useRepo();
-  const today = new Date();
-
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
+  const { year, month, prev, next } = useCalendarMonth();
   const [faces, setFaces] = useState<Record<string, string>>({});
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [dayPhotos, setDayPhotos] = useState<Photo[]>([]);
@@ -28,24 +26,6 @@ export function useProfileScreen() {
       load();
     }, [load])
   );
-
-  const prev = () => {
-    if (month === 0) {
-      setYear(year - 1);
-      setMonth(11);
-    } else {
-      setMonth(month - 1);
-    }
-  };
-
-  const next = () => {
-    if (month === 11) {
-      setYear(year + 1);
-      setMonth(0);
-    } else {
-      setMonth(month + 1);
-    }
-  };
 
   const openDay = async (date: string) => {
     const photos = await repo.listPhotosForDate(date);

@@ -1,4 +1,5 @@
 import { useRepo } from '@/src/data/RepositoryProvider';
+import { useCalendarMonth } from '@/src/features/calendar/CalendarMonthProvider';
 import { Circle, Hangout, Photo } from '@/src/data/types';
 import { newId } from '@/src/lib/id';
 import * as ImagePicker from 'expo-image-picker';
@@ -9,10 +10,7 @@ const MAX_PHOTOS = 5;
 
 export function useCalendarScreen() {
   const repo = useRepo();
-  const today = new Date();
-
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
+  const { year, month, prev, next } = useCalendarMonth();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [hangouts, setHangouts] = useState<Hangout[]>([]);
 
@@ -51,24 +49,6 @@ export function useCalendarScreen() {
   hangouts.forEach((h) => {
     (byDate[h.date] ||= []).push(h);
   });
-
-  const prev = () => {
-    if (month === 0) {
-      setYear(year - 1);
-      setMonth(11);
-    } else {
-      setMonth(month - 1);
-    }
-  };
-
-  const next = () => {
-    if (month === 11) {
-      setYear(year + 1);
-      setMonth(0);
-    } else {
-      setMonth(month + 1);
-    }
-  };
 
   const openAdd = (date: string) => {
     setOpenDate(date);
