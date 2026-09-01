@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
 const MAX_PHOTOS = 5;
+const CIRCLE_COLORS = ['#E8674C', '#E0A73E', '#4C86E8', '#7B61C9', '#3FA372', '#D65B9A'];
 
 export function useCalendarScreen() {
   const repo = useRepo();
@@ -20,6 +21,7 @@ export function useCalendarScreen() {
   const [pickedCircle, setPickedCircle] = useState<string | null>(null);
 
   const [newCircleName, setNewCircleName] = useState('');
+  const [circleColor, setCircleColor] = useState(CIRCLE_COLORS[0]);
 
   const [openHangout, setOpenHangout] = useState<Hangout | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -62,28 +64,36 @@ export function useCalendarScreen() {
 
   const openCreateCircle = () => {
     setNewCircleName('');
+    setCircleColor(CIRCLE_COLORS[circles.length % CIRCLE_COLORS.length]);
     setEditingCircle(null);
     setCreatingCircle(true);
+  };
+
+  const openEditCircle = (circle: Circle) => {
+    setNewCircleName(circle.name);
+    setCircleColor(circle.color);
+    setCreatingCircle(false);
+    setEditingCircle(circle);
   };
 
   const closeCircleModal = () => {
     setEditingCircle(null);
     setCreatingCircle(false);
     setNewCircleName('');
+    setCircleColor(CIRCLE_COLORS[0]);
   };
 
-  const createCircle = async () => {
+  const saveCircle = async () => {
     const name = newCircleName.trim();
     if (!name) return;
 
-    const palette = ['#E8674C', '#E0A73E', '#4C86E8', '#7B61C9', '#3FA372', '#D65B9A'];
-    const id = newId();
+    const circle = editingCircle;
 
     await repo.saveCircle({
-      id,
+      id: circle?.id ?? newId(),
       name,
-      color: palette[circles.length % palette.length],
-      sort: circles.length,
+      color: circleColor,
+      sort: circle?.sort ?? circles.length,
       updatedAt: Date.now(),
     });
 
@@ -202,6 +212,7 @@ export function useCalendarScreen() {
     note,
     pickedCircle,
     newCircleName,
+    circleColor,
 
     openHangout,
     editTitle,
@@ -212,6 +223,7 @@ export function useCalendarScreen() {
     setNote,
     setPickedCircle,
     setNewCircleName,
+    setCircleColor,
     setOpenHangout,
     setEditTitle,
     setEditNote,
@@ -225,8 +237,9 @@ export function useCalendarScreen() {
     openAdd,
     closeAdd,
     openCreateCircle,
+    openEditCircle,
     closeCircleModal,
-    createCircle,
+    saveCircle,
     submit,
     openDetail,
     saveEdits,

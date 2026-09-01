@@ -32,7 +32,7 @@ export default function Home() {
         {calendar.circles.map((c) => (
           <Pressable
             key={c.id}
-            onPress={() => calendar.setEditingCircle(c)}
+            onPress={() => calendar.openEditCircle(c)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
           >
             <View
@@ -97,9 +97,11 @@ export default function Home() {
         editingCircle={calendar.editingCircle}
         creatingCircle={calendar.creatingCircle}
         newCircleName={calendar.newCircleName}
+        circleColor={calendar.circleColor}
         onClose={calendar.closeCircleModal}
         onChangeNewCircleName={calendar.setNewCircleName}
-        onCreateCircle={calendar.createCircle}
+        onChangeCircleColor={calendar.setCircleColor}
+        onSaveCircle={calendar.saveCircle}
       />
     </View>
   );

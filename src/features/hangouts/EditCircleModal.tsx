@@ -5,18 +5,24 @@ type EditCircleModalProps = {
   editingCircle: Circle | null;
   creatingCircle: boolean;
   newCircleName: string;
+  circleColor: string;
   onClose: () => void;
   onChangeNewCircleName: (value: string) => void;
-  onCreateCircle: () => void;
+  onChangeCircleColor: (value: string) => void;
+  onSaveCircle: () => void;
 };
+
+const CIRCLE_COLORS = ['#E8674C', '#E0A73E', '#4C86E8', '#7B61C9', '#3FA372', '#D65B9A'];
 
 export function EditCircleModal({
   editingCircle,
   creatingCircle,
   newCircleName,
+  circleColor,
   onClose,
   onChangeNewCircleName,
-  onCreateCircle,
+  onChangeCircleColor,
+  onSaveCircle,
 }: EditCircleModalProps) {
   const open = creatingCircle || editingCircle !== null;
 
@@ -42,40 +48,60 @@ export function EditCircleModal({
               {creatingCircle ? 'New circle' : 'Edit circle'}
             </Text>
 
-            {creatingCircle && (
-              <TextInput
-                autoFocus
-                placeholder="circle name"
-                value={newCircleName}
-                onChangeText={onChangeNewCircleName}
-                onSubmitEditing={onCreateCircle}
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#ddd',
-                  borderRadius: 10,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  fontSize: 15,
-                }}
-              />
-            )}
+            <TextInput
+              autoFocus
+              placeholder="circle name"
+              value={newCircleName}
+              onChangeText={onChangeNewCircleName}
+              onSubmitEditing={onSaveCircle}
+              style={{
+                borderWidth: 1,
+                borderColor: '#ddd',
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                fontSize: 15,
+              }}
+            />
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {CIRCLE_COLORS.map((color) => {
+                const selected = color === circleColor;
+                return (
+                  <Pressable
+                    key={color}
+                    accessibilityLabel={`Choose ${color} circle color`}
+                    accessibilityRole="button"
+                    onPress={() => onChangeCircleColor(color)}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 15,
+                      backgroundColor: color,
+                      borderWidth: selected ? 3 : 0,
+                      borderColor: '#222',
+                    }}
+                  />
+                );
+              })}
+            </View>
 
             {!creatingCircle && editingCircle && (
-              <Text style={{ color: '#666' }}>{editingCircle.name}</Text>
+              <Text style={{ color: '#666' }}>Changes apply to existing hangouts in this circle.</Text>
             )}
 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
               <Pressable onPress={onClose} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
                 <Text style={{ color: '#666' }}>Cancel</Text>
               </Pressable>
-              {creatingCircle && (
-                <Pressable
-                  onPress={onCreateCircle}
-                  style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '600' }}>Add</Text>
-                </Pressable>
-              )}
+              <Pressable
+                onPress={onSaveCircle}
+                style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '600' }}>
+                  {creatingCircle ? 'Add' : 'Save'}
+                </Text>
+              </Pressable>
             </View>
           </Pressable>
         </KeyboardAvoidingView>
