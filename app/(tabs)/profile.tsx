@@ -67,7 +67,7 @@ export default function Profile() {
           onPressDay={profile.openDay}
         />
       ) : (
-        <View style={{ marginHorizontal: -8 }}>
+        <View style={{ flex: 1, marginHorizontal: -8 }}>
           <ProfilePhotoGrid photos={profile.gridPhotos} />
         </View>
     )}

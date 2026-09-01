@@ -11,7 +11,7 @@ type ProfilePhotoGridProps = {
 
 export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap'}}>
         {photos.map((photo) => (
           <View
