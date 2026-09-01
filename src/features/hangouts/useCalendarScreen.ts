@@ -19,7 +19,6 @@ export function useCalendarScreen() {
   const [note, setNote] = useState('');
   const [pickedCircle, setPickedCircle] = useState<string | null>(null);
 
-  const [addingCircle, setAddingCircle] = useState(false);
   const [newCircleName, setNewCircleName] = useState('');
 
   const [openHangout, setOpenHangout] = useState<Hangout | null>(null);
@@ -55,12 +54,22 @@ export function useCalendarScreen() {
     setTitle('');
     setNote('');
     setPickedCircle(circles[0]?.id ?? null);
-    setAddingCircle(false);
-    setNewCircleName('');
   };
 
   const closeAdd = () => {
     setOpenDate(null);
+  };
+
+  const openCreateCircle = () => {
+    setNewCircleName('');
+    setEditingCircle(null);
+    setCreatingCircle(true);
+  };
+
+  const closeCircleModal = () => {
+    setEditingCircle(null);
+    setCreatingCircle(false);
+    setNewCircleName('');
   };
 
   const createCircle = async () => {
@@ -79,9 +88,7 @@ export function useCalendarScreen() {
     });
 
     setCircles(await repo.listCircles());
-    setPickedCircle(id);
-    setAddingCircle(false);
-    setNewCircleName('');
+    closeCircleModal();
   };
 
   const submit = async () => {
@@ -194,7 +201,6 @@ export function useCalendarScreen() {
     title,
     note,
     pickedCircle,
-    addingCircle,
     newCircleName,
 
     openHangout,
@@ -205,7 +211,6 @@ export function useCalendarScreen() {
     setTitle,
     setNote,
     setPickedCircle,
-    setAddingCircle,
     setNewCircleName,
     setOpenHangout,
     setEditTitle,
@@ -219,6 +224,8 @@ export function useCalendarScreen() {
     next,
     openAdd,
     closeAdd,
+    openCreateCircle,
+    closeCircleModal,
     createCircle,
     submit,
     openDetail,

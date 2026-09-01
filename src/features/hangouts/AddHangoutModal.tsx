@@ -6,16 +6,11 @@ type AddHangoutModalProps = {
   title: string;
   note: string;
   pickedCircle: string | null;
-  addingCircle: boolean;
-  newCircleName: string;
   circles: Circle[];
   onClose: () => void;
   onChangeTitle: (value: string) => void;
   onChangeNote: (value: string) => void;
   onPickCircle: (id: string) => void;
-  onStartAddCircle: () => void;
-  onChangeNewCircleName: (value: string) => void;
-  onCreateCircle: () => void;
   onSubmit: () => void;
 };
 
@@ -24,16 +19,11 @@ export function AddHangoutModal({
   title,
   note,
   pickedCircle,
-  addingCircle,
-  newCircleName,
   circles,
   onClose,
   onChangeTitle,
   onChangeNote,
   onPickCircle,
-  onStartAddCircle,
-  onChangeNewCircleName,
-  onCreateCircle,
   onSubmit,
 }: AddHangoutModalProps) {
   return (
@@ -108,52 +98,7 @@ export function AddHangoutModal({
                 );
               })}
 
-              <Pressable
-                onPress={onStartAddCircle}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 999,
-                  borderWidth: 1.5,
-                  borderColor: '#bbb',
-                  borderStyle: 'dashed',
-                }}
-              >
-                <Text style={{ color: '#777', fontSize: 13 }}>+ circle</Text>
-              </Pressable>
             </View>
-
-            {addingCircle && (
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TextInput
-                  autoFocus
-                  placeholder="circle name"
-                  value={newCircleName}
-                  onChangeText={onChangeNewCircleName}
-                  onSubmitEditing={onCreateCircle}
-                  style={{
-                    flex: 1,
-                    borderWidth: 1,
-                    borderColor: '#ddd',
-                    borderRadius: 10,
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    fontSize: 14,
-                  }}
-                />
-                <Pressable
-                  onPress={onCreateCircle}
-                  style={{
-                    paddingHorizontal: 14,
-                    justifyContent: 'center',
-                    borderRadius: 10,
-                    backgroundColor: '#333',
-                  }}
-                >
-                  <Text style={{ color: '#fff' }}>Save</Text>
-                </Pressable>
-              </View>
-            )}
 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
               <Pressable onPress={onClose} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>

@@ -49,7 +49,7 @@ export default function Home() {
           </Pressable>
         ))}
 
-        <Pressable onPress={() => calendar.setCreatingCircle(true)}>
+        <Pressable onPress={calendar.openCreateCircle}>
           <Text style={{ fontSize: 18, color: '#555' }}>+</Text>
         </Pressable>
       </View>
@@ -68,16 +68,11 @@ export default function Home() {
         title={calendar.title}
         note={calendar.note}
         pickedCircle={calendar.pickedCircle}
-        addingCircle={calendar.addingCircle}
-        newCircleName={calendar.newCircleName}
         circles={calendar.circles}
         onClose={calendar.closeAdd}
         onChangeTitle={calendar.setTitle}
         onChangeNote={calendar.setNote}
         onPickCircle={calendar.setPickedCircle}
-        onStartAddCircle={() => calendar.setAddingCircle(true)}
-        onChangeNewCircleName={calendar.setNewCircleName}
-        onCreateCircle={calendar.createCircle}
         onSubmit={calendar.submit}
       />
 
@@ -101,10 +96,10 @@ export default function Home() {
       <EditCircleModal
         editingCircle={calendar.editingCircle}
         creatingCircle={calendar.creatingCircle}
-        onClose={() => {
-          calendar.setEditingCircle(null);
-          calendar.setCreatingCircle(false);
-        }}
+        newCircleName={calendar.newCircleName}
+        onClose={calendar.closeCircleModal}
+        onChangeNewCircleName={calendar.setNewCircleName}
+        onCreateCircle={calendar.createCircle}
       />
     </View>
   );
