@@ -9,6 +9,8 @@ export const localRepository: Repository = {
   listCircles: circles.listCircles,
   saveCircle: circles.saveCircle,
   nextCircleSort: circles.nextCircleSort,
+  countHangoutsForCircle: circles.countHangoutsForCircle,
+  moveHangoutsAndDeleteCircle: circles.moveHangoutsAndDeleteCircle,
   listHangouts: hangouts.listHangouts,
   saveHangout: hangouts.saveHangout,
   deleteHangout: hangouts.deleteHangout,

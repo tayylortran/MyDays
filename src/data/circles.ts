@@ -36,3 +36,30 @@ export async function nextCircleSort(): Promise<number> {
   );
   return row.next;
 }
+
+export async function countHangoutsForCircle(circleId: string): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) AS count FROM hangouts WHERE circle_id = ?`,
+    [circleId]
+  );
+  return row?.count ?? 0;
+}
+
+export async function moveHangoutsAndDeleteCircle(
+  circleId: string,
+  destinationCircleId: string | null
+): Promise<void> {
+  const db = await getDb();
+
+  await db.withTransactionAsync(async () => {
+    if (destinationCircleId) {
+      await db.runAsync(
+        `UPDATE hangouts SET circle_id = ?, updated_at = ? WHERE circle_id = ?`,
+        [destinationCircleId, Date.now(), circleId]
+      );
+    }
+
+    await db.runAsync(`DELETE FROM circles WHERE id = ?`, [circleId]);
+  });
+}

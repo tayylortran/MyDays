@@ -30,6 +30,9 @@ export function useCalendarScreen() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [editingCircle, setEditingCircle] = useState<Circle | null>(null);
   const [creatingCircle, setCreatingCircle] = useState(false);
+  const [deletingCircle, setDeletingCircle] = useState(false);
+  const [circleHangoutCount, setCircleHangoutCount] = useState(0);
+  const [deleteDestinationId, setDeleteDestinationId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setCircles(await repo.listCircles());
@@ -67,6 +70,7 @@ export function useCalendarScreen() {
     setCircleColor(CIRCLE_COLORS[circles.length % CIRCLE_COLORS.length]);
     setEditingCircle(null);
     setCreatingCircle(true);
+    setDeletingCircle(false);
   };
 
   const openEditCircle = (circle: Circle) => {
@@ -74,6 +78,41 @@ export function useCalendarScreen() {
     setCircleColor(circle.color);
     setCreatingCircle(false);
     setEditingCircle(circle);
+    setDeletingCircle(false);
+  };
+
+  const startDeleteCircle = async () => {
+    if (!editingCircle) return;
+
+    const hangoutCount = await repo.countHangoutsForCircle(editingCircle.id);
+    const destination = circles.find((circle) => circle.id !== editingCircle.id);
+
+    setCircleHangoutCount(hangoutCount);
+    setDeleteDestinationId(destination?.id ?? null);
+    setDeletingCircle(true);
+  };
+
+  const cancelDeleteCircle = () => {
+    setDeletingCircle(false);
+    setCircleHangoutCount(0);
+    setDeleteDestinationId(null);
+  };
+
+  const deleteCircle = async () => {
+    if (!editingCircle) return;
+
+    if (circleHangoutCount > 0 && !deleteDestinationId) {
+      Alert.alert('Choose a destination circle first');
+      return;
+    }
+
+    try {
+      await repo.moveHangoutsAndDeleteCircle(editingCircle.id, deleteDestinationId);
+      closeCircleModal();
+      await load();
+    } catch (e: any) {
+      Alert.alert('Could not delete circle', String(e?.message ?? e));
+    }
   };
 
   const closeCircleModal = () => {
@@ -81,6 +120,9 @@ export function useCalendarScreen() {
     setCreatingCircle(false);
     setNewCircleName('');
     setCircleColor(CIRCLE_COLORS[0]);
+    setDeletingCircle(false);
+    setCircleHangoutCount(0);
+    setDeleteDestinationId(null);
   };
 
   const saveCircle = async () => {
@@ -248,7 +290,14 @@ export function useCalendarScreen() {
     removeHangout,
     editingCircle,
     creatingCircle,
+    deletingCircle,
+    circleHangoutCount,
+    deleteDestinationId,
     setEditingCircle,
     setCreatingCircle,
+    setDeleteDestinationId,
+    startDeleteCircle,
+    cancelDeleteCircle,
+    deleteCircle,
   };
 }

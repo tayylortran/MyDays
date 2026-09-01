@@ -98,10 +98,18 @@ export default function Home() {
         creatingCircle={calendar.creatingCircle}
         newCircleName={calendar.newCircleName}
         circleColor={calendar.circleColor}
+        circles={calendar.circles}
+        deletingCircle={calendar.deletingCircle}
+        circleHangoutCount={calendar.circleHangoutCount}
+        deleteDestinationId={calendar.deleteDestinationId}
         onClose={calendar.closeCircleModal}
         onChangeNewCircleName={calendar.setNewCircleName}
         onChangeCircleColor={calendar.setCircleColor}
         onSaveCircle={calendar.saveCircle}
+        onStartDelete={calendar.startDeleteCircle}
+        onCancelDelete={calendar.cancelDeleteCircle}
+        onChangeDeleteDestination={calendar.setDeleteDestinationId}
+        onDelete={calendar.deleteCircle}
       />
     </View>
   );
