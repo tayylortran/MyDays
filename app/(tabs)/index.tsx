@@ -10,6 +10,7 @@ export default function Home() {
   const calendar = useCalendarScreen(); //calls the brain and stores everything it hands back as a variable called calendar. 
   //it holds all the actions and data for this screen. 
 
+
   return (
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
       <MonthHeader //component
