@@ -2,7 +2,12 @@ import { Directory, File, Paths } from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { newId } from '../lib/id';
 import { getDb } from './db';
-import { Photo } from './types';
+import {
+  LibraryPhoto,
+  LibraryPhotoOptions,
+  LibraryPhotoPage,
+  Photo,
+} from './types';
 
 const PHOTO_DIR = new Directory(Paths.document, 'photos');
 
@@ -68,4 +73,113 @@ export async function deletePhoto(id: string): Promise<void> {
   }
   await db.runAsync(`DELETE FROM day_faces WHERE photo_id = ?`, [id]);
   await db.runAsync(`DELETE FROM photos WHERE id = ?`, [id]);
+}
+
+type LibraryPhotoRow = {
+  id: string;
+  hangout_id: string;
+  uri: string;
+  thumb_uri: string | null;
+  sort: number;
+  updated_at: number;
+  date: string;
+};
+
+export async function listLibraryPhotos(
+  options: LibraryPhotoOptions
+): Promise<LibraryPhotoPage> {
+  const { circleId, cursor, limit } = options;
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new Error('Photo page size must be between 1 and 100.');
+  }
+
+  const conditions: string[] = [];
+  const params: (string | number)[] = [];
+
+  // Only filter by circle when one was supplied.
+  if (circleId !== undefined) {
+    conditions.push('h.circle_id = ?');
+    params.push(circleId);
+  }
+
+  // Continue after the last photo from the previous batch.
+  if (cursor !== undefined) {
+    const bookmark = JSON.parse(cursor);
+
+    if (
+      !bookmark ||
+      typeof bookmark.date !== 'string' ||
+      typeof bookmark.id !== 'string' ||
+      bookmark.circleId !== (circleId ?? null)
+    ) {
+      throw new Error('Invalid photo cursor for this filter.');
+    }
+
+    conditions.push(`
+      (
+        h.date < ?
+        OR (h.date = ? AND p.id < ?)
+      )
+    `);
+
+    params.push(bookmark.date, bookmark.date, bookmark.id);
+  }
+
+  const where =
+    conditions.length > 0
+      ? `WHERE ${conditions.join(' AND ')}`
+      : '';
+
+  // Fetch one extra row to find out whether another page exists.
+  params.push(limit + 1);
+
+  const db = await getDb();
+
+  const rows = await db.getAllAsync<LibraryPhotoRow>(
+    `
+      SELECT
+        p.id,
+        p.hangout_id,
+        p.uri,
+        p.thumb_uri,
+        p.sort,
+        p.updated_at,
+        h.date
+      FROM photos p
+      JOIN hangouts h ON h.id = p.hangout_id
+      ${where}
+      ORDER BY h.date DESC, p.id DESC
+      LIMIT ?
+    `,
+    params
+  );
+
+  const hasMore = rows.length > limit;
+
+  const items: LibraryPhoto[] = rows
+    .slice(0, limit)
+    .map((row) => ({
+      id: row.id,
+      hangoutId: row.hangout_id,
+      uri: row.uri,
+      thumbUri: row.thumb_uri ?? undefined,
+      sort: row.sort,
+      updatedAt: row.updated_at,
+      date: row.date,
+    }));
+
+  const lastPhoto = items[items.length - 1];
+
+  return {
+    items,
+    nextCursor:
+      hasMore && lastPhoto
+        ? JSON.stringify({
+            date: lastPhoto.date,
+            id: lastPhoto.id,
+            circleId: circleId ?? null,
+          })
+        : null,
+  };
 }
