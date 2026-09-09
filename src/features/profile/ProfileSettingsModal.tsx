@@ -61,7 +61,6 @@ export function ProfileSettingsModal({
             </View>
 
             <TextInput
-              autoFocus
               placeholder="Your name"
               value={username}
               onChangeText={onChangeUsername}

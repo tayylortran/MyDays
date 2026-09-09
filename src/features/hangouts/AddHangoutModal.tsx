@@ -49,8 +49,8 @@ export function AddHangoutModal({
             </Text>
 
             <TextInput
-              autoFocus
               placeholder="what did you do?"
+              placeholderTextColor="#666"
               value={title}
               onChangeText={onChangeTitle}
               style={{
@@ -65,6 +65,7 @@ export function AddHangoutModal({
 
             <TextInput
               placeholder="who was there / notes (optional)"
+              placeholderTextColor="#666"
               value={note}
               onChangeText={onChangeNote}
               style={{
