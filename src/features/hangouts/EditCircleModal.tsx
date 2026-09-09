@@ -125,7 +125,6 @@ export function EditCircleModal({
             ) : (
               <>
                 <TextInput
-                  autoFocus
                   placeholder="circle name"
                   value={newCircleName}
                   onChangeText={onChangeNewCircleName}
