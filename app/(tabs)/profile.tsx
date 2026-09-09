@@ -1,4 +1,3 @@
-import SignOutButton from '@/src/features/auth/SignOutButton';
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { ChooseDayFaceModal } from '@/src/features/profile/ChooseDayFaceModal';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
@@ -14,7 +13,6 @@ export default function Profile() {
 
   return (
     <View style={{ flex: 1, paddingTop: 54, paddingHorizontal: 8 }}>
-      <SignOutButton />
       <View style={{ alignItems: 'flex-end', marginBottom: 12 }}>
         <Pressable onPress={profile.openSettings} hitSlop={12}>
           <Ionicons name="settings-outline" size={22} color="#333" />

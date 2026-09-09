@@ -1,3 +1,4 @@
+import SignOutButton from '@/src/features/auth/SignOutButton';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
 
 type ProfileSettingsModalProps = {
@@ -117,6 +118,9 @@ export function ProfileSettingsModal({
               >
                 <Text style={{ color: '#fff', fontWeight: '600' }}>Save</Text>
               </Pressable>
+            </View>
+            <View style={{ borderTopWidth: 1, borderTopColor: '#eee', paddingTop: 14 }}>
+              {visible && <SignOutButton />}
             </View>
           </Pressable>
         </KeyboardAvoidingView>
