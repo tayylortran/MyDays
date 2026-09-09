@@ -12,6 +12,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="pictures"
+        options={{
+          title: 'Pictures',
+          tabBarIcon: ({ color, size }) => <Ionicons name="images-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
