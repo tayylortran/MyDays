@@ -4,6 +4,7 @@ import { AddHangoutModal } from '@/src/features/hangouts/AddHangoutModal';
 import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
 import { HangoutDetailModal } from '@/src/features/hangouts/HangoutDetailModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
+import { Link } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 export default function Home() {
@@ -13,6 +14,9 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
+      <Link href="/(auth)/login" style={{ padding: 12 }}>
+        Open login screen
+      </Link>
       <MonthHeader //component
         month={calendar.month} //"passing props".
         year={calendar.year}
