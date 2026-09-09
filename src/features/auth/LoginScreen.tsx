@@ -1,3 +1,4 @@
+import { signIn, signUp } from '@/src/features/auth/authService';
 import { useState } from 'react';
 import {
     Button,
@@ -14,19 +15,47 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(action: 'signIn' | 'signUp') {
-    if (!email.trim() || !password) {
-      setMessage('Please enter your email and password.');
+  async function handleSubmit(action: 'signIn' | 'signUp') {
+  if (loading) return;
+
+  if (!email.trim() || !password) {
+    setMessage('Please enter your email and password.');
+    return;
+  }
+
+  setLoading(true);
+  setMessage('Please wait...');
+
+  try {
+    const result =
+      action === 'signIn'
+        ? await signIn(email.trim(), password)
+        : await signUp(email.trim(), password);
+
+    if (!result.ok) {
+      setMessage(result.message);
+      return;
+    }
+
+    if (result.status === 'confirmationRequired') {
+      setMessage('Check your email to confirm your account.');
       return;
     }
 
     setMessage(
       action === 'signIn'
-        ? 'Sign in button works. Authentication is not connected yet.'
-        : 'Create account button works. Authentication is not connected yet.'
+        ? 'Signed in successfully!'
+        : 'Account created! You are signed in.'
     );
+    setPassword('');
+  } catch {
+    setMessage('Unable to complete the request. Please try again.');
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <KeyboardAvoidingView
@@ -51,6 +80,7 @@ export default function LoginScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!loading}
         />
 
         <Text style={styles.label}>Password</Text>
@@ -64,15 +94,18 @@ export default function LoginScreen() {
           secureTextEntry
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!loading}
         />
 
         <Button
           title="Sign in"
+          disabled={loading}
           onPress={() => handleSubmit('signIn')}
         />
 
         <Button
           title="Create account"
+          disabled={loading}
           onPress={() => handleSubmit('signUp')}
         />
 
