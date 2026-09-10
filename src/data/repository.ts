@@ -1,7 +1,7 @@
 import {
   Circle, Hangout,
   LibraryPhotoOptions, LibraryPhotoPage,
-  Photo, ProfileSettings
+  Photo, ProfileSettings, SaveHangoutInput, SavedHangout
 } from './types';
 
 export interface Repository {
@@ -13,6 +13,7 @@ export interface Repository {
 
   listHangouts(month: string): Promise<Hangout[]>;
   saveHangout(h: Hangout): Promise<void>;
+  saveHangoutWithPhotos(input: SaveHangoutInput): Promise<SavedHangout>;
   deleteHangout(id: string): Promise<void>;
 
   addPhoto(hangoutId: string, pickedUri: string): Promise<Photo>;

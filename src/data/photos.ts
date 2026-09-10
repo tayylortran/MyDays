@@ -52,7 +52,7 @@ export async function listPhotos(hangoutId: string): Promise<Photo[]> {
   const db = await getDb();
   const rows = await db.getAllAsync<any>(
     `SELECT id, hangout_id, uri, thumb_uri, sort, updated_at
-     FROM photos WHERE hangout_id = ? ORDER BY sort`,
+     FROM photos WHERE hangout_id = ? ORDER BY sort, id`,
     [hangoutId]
   );
   return rows.map((r) => ({

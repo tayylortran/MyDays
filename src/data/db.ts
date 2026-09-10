@@ -55,6 +55,9 @@ async function init(): Promise<SQLite.SQLiteDatabase> {
 
     CREATE INDEX IF NOT EXISTS idx_hangouts_date  ON hangouts(date);
     CREATE INDEX IF NOT EXISTS idx_photos_hangout ON photos(hangout_id);
+    CREATE TABLE IF NOT EXISTS pending_photo_deletions (
+      uri TEXT PRIMARY KEY NOT NULL
+    );
   `);
   return db;
 }

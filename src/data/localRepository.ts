@@ -2,6 +2,7 @@ import * as circles from './circles';
 import * as hangouts from './hangouts';
 import * as photos from './photos';
 import * as profile from './profile';
+import * as hangoutDrafts from './hangoutDrafts';
 import { Repository } from './repository';
 
 
@@ -13,7 +14,8 @@ export const localRepository: Repository = {
   moveHangoutsAndDeleteCircle: circles.moveHangoutsAndDeleteCircle,
   listHangouts: hangouts.listHangouts,
   saveHangout: hangouts.saveHangout,
-  deleteHangout: hangouts.deleteHangout,
+  saveHangoutWithPhotos: hangoutDrafts.saveHangoutWithPhotos,
+  deleteHangout: hangoutDrafts.deleteHangoutWithPhotos,
   addPhoto: photos.addPhoto,
   listPhotos: photos.listPhotos,
   deletePhoto: photos.deletePhoto,

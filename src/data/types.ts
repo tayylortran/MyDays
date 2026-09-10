@@ -24,6 +24,23 @@ export interface Photo {
     updatedAt: number;
 }
 
+export const MAX_HANGOUT_PHOTOS = 5;
+
+export type HangoutPhotoInput =
+  | { kind: 'existing'; id: string }
+  | { kind: 'new'; id: string; uri: string };
+
+export interface SaveHangoutInput {
+  mode: 'create' | 'edit';
+  hangout: Hangout;
+  photos: HangoutPhotoInput[];
+}
+
+export interface SavedHangout {
+  hangout: Hangout;
+  photos: Photo[];
+}
+
 export interface ProfileSettings {
     username: string;
     photoUri: string | null;

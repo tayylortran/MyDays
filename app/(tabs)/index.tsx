@@ -1,8 +1,7 @@
 import { CalendarGrid } from '@/src/features/calendar/CalendarGrid';
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
-import { AddHangoutModal } from '@/src/features/hangouts/AddHangoutModal';
+import { HangoutFlowModal } from '@/src/features/hangouts/HangoutFlowModal';
 import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
-import { HangoutDetailModal } from '@/src/features/hangouts/HangoutDetailModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
 import { Pressable, Text, View } from 'react-native';
 
@@ -70,35 +69,7 @@ export default function Home() {
         onPressHangout={calendar.openDetail}
       />
 
-      <AddHangoutModal //component
-        openDate={calendar.openDate}
-        title={calendar.title}
-        note={calendar.note}
-        pickedCircle={calendar.pickedCircle}
-        circles={calendar.circles}
-        onClose={calendar.closeAdd}
-        onChangeTitle={calendar.setTitle}
-        onChangeNote={calendar.setNote}
-        onPickCircle={calendar.setPickedCircle}
-        onSubmit={calendar.submit}
-      />
-
-      <HangoutDetailModal //component
-        openHangout={calendar.openHangout}
-        editTitle={calendar.editTitle}
-        editNote={calendar.editNote}
-        editCircle={calendar.editCircle}
-        circles={calendar.circles}
-        photos={calendar.photos}
-        onClose={() => calendar.setOpenHangout(null)}
-        onChangeTitle={calendar.setEditTitle}
-        onChangeNote={calendar.setEditNote}
-        onPickCircle={calendar.setEditCircle}
-        onPickPhoto={calendar.pickPhoto}
-        onRemovePhoto={calendar.removePhoto}
-        onRemoveHangout={calendar.removeHangout}
-        onSave={calendar.saveEdits}
-      />
+      <HangoutFlowModal controller={calendar.hangoutEditor} circles={calendar.circles} />
 
       <EditCircleModal
         editingCircle={calendar.editingCircle}
