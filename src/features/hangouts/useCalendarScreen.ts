@@ -2,9 +2,9 @@ import { useRepo } from '@/src/data/RepositoryProvider';
 import { useCalendarMonth } from '@/src/features/calendar/CalendarMonthProvider';
 import { Circle, Hangout } from '@/src/data/types';
 import { newId } from '@/src/lib/id';
-import { useHangoutEditor } from './useHangoutEditor';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import { useHangoutEditor } from './useHangoutEditor';
 
 const CIRCLE_COLORS = ['#E8674C', '#E0A73E', '#4C86E8', '#7B61C9', '#3FA372', '#D65B9A'];
 
@@ -136,11 +136,9 @@ export function useCalendarScreen() {
     year,
     month,
     circles,
-    hangouts,
 
     newCircleName,
     circleColor,
-
 
     setNewCircleName,
     setCircleColor,
@@ -159,8 +157,6 @@ export function useCalendarScreen() {
     deletingCircle,
     circleHangoutCount,
     deleteDestinationId,
-    setEditingCircle,
-    setCreatingCircle,
     setDeleteDestinationId,
     startDeleteCircle,
     cancelDeleteCircle,

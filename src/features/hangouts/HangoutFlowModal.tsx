@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HangoutDetailView } from './HangoutDetailView';
-import { HangoutEditorModal } from './HangoutEditorModal';
+import { HangoutEditorForm } from './HangoutEditorForm';
 import type { HangoutEditorController } from './useHangoutEditor';
 
 export function HangoutFlowModal({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
@@ -16,7 +16,7 @@ export function HangoutFlowModal({ controller, circles }: { controller: HangoutE
   return (
     <Modal visible={mode !== 'closed'} transparent animationType="slide" statusBarTranslucent
       onRequestClose={() => preview ? setPreview(null) : controller.close()}>
-      {mode === 'edit' && <HangoutEditorModal controller={controller} circles={circles} />}
+      {mode === 'edit' && <HangoutEditorForm controller={controller} circles={circles} />}
       {mode === 'view' && <HangoutDetailView controller={controller} circles={circles} onPreview={setPreview} />}
       {mode === 'loading' && (
         <View style={styles.loading}>

@@ -56,7 +56,12 @@ function fixture() {
     return module.exports;
   }
   const types = load('src/data/types.ts', {});
-  const api = load('src/data/hangoutDrafts.ts', {
+  const photoQueries = load('src/data/photos.ts', { './db': { getDb: async () => adapter }, './types': types });
+  const profileQueries = load('src/data/profile.ts', {
+    './db': { getDb: async () => adapter }, './photos': photoQueries, './types': types,
+  });
+  const api = load('src/data/hangouts.ts', {
+    './photos': photoQueries,
     'expo-file-system': { Directory, File, Paths: { document: 'file:///test' } },
     'expo-image-manipulator': {
       SaveFormat: { JPEG: 'jpeg' },
@@ -75,7 +80,7 @@ function fixture() {
   const hangout = { id: 'hangout', date: '2026-09-19', title: ' Game day ', note: ' Diary ', circleId: 'circle', updatedAt: 1 };
   const photo = (id) => ({ kind: 'new', id, uri: `picked-${id}` });
   const count = (table) => sqlite.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n;
-  return { api, hangout, photo, sqlite, files, lockedFiles, count, fail: (fn) => { failSql = fn; } };
+  return { api, photoQueries, profileQueries, hangout, photo, sqlite, files, lockedFiles, count, fail: (fn) => { failSql = fn; } };
 }
 
 async function main() {
@@ -86,6 +91,16 @@ async function main() {
     assert.equal(f.count('hangouts'), 1);
     assert.equal(f.files.size, 2);
     assert.deepEqual(saved.photos.map((p) => p.id), ['a', 'b']);
+    const expectedPhotos = saved.photos.map((photo) => ({ ...photo, thumbUri: photo.thumbUri }));
+    assert.deepEqual(await f.photoQueries.listPhotos('hangout'), expectedPhotos);
+    const library = await f.photoQueries.listLibraryPhotos({ limit: 1, circleId: 'circle' });
+    assert.equal(library.items[0].date, f.hangout.date);
+    assert.equal(library.items[0].hangoutId, 'hangout');
+    assert.equal(library.items[0].uri, saved.photos[1].uri);
+    const nextPage = await f.photoQueries.listLibraryPhotos({ limit: 1, circleId: 'circle', cursor: library.nextCursor });
+    assert.equal(nextPage.items[0].id, 'a');
+    assert.equal(nextPage.nextCursor, null);
+    assert.deepEqual(await f.profileQueries.listPhotosForDate(f.hangout.date), expectedPhotos);
     const originalB = saved.photos[1].uri;
     f.sqlite.exec("INSERT INTO day_faces VALUES ('2026-09-19', 'a', 1)");
     const edited = await f.api.saveHangoutWithPhotos({ mode: 'edit', hangout: { ...f.hangout, title: 'Edited' }, photos: [{ kind: 'existing', id: 'b' }, f.photo('c')] });
@@ -94,7 +109,7 @@ async function main() {
     assert.equal(f.count('day_faces'), 0);
     assert.equal(f.files.size, 2);
     assert.ok(!f.files.has(saved.photos[0].uri));
-    await f.api.deleteHangoutWithPhotos('hangout');
+    await f.api.deleteHangout('hangout');
     assert.equal(f.count('hangouts'), 0);
     assert.equal(f.count('photos'), 0);
     assert.equal(f.files.size, 0);
@@ -132,7 +147,7 @@ async function main() {
     await assert.rejects(f.api.saveHangoutWithPhotos({ mode: 'edit', hangout: { ...f.hangout, date: '2026-09-20' }, photos: [] }), /date cannot/);
     await assert.rejects(f.api.saveHangoutWithPhotos({ mode: 'edit', hangout: f.hangout, photos: [{ kind: 'existing', id: 'foreign' }] }), /no longer belongs/);
     f.lockedFiles.add(saved.photos[0].uri);
-    await f.api.deleteHangoutWithPhotos('hangout');
+    await f.api.deleteHangout('hangout');
     assert.equal(f.count('pending_photo_deletions'), 1, 'Failed file deletion is durably queued');
     f.lockedFiles.clear();
     await f.api.flushPhotoCleanup();

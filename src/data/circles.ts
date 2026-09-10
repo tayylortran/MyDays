@@ -29,14 +29,6 @@ export async function listCircles(): Promise<Circle[]> {
   }));
 }
 
-export async function nextCircleSort(): Promise<number> {
-  const db = await getDb();
-  const row = await db.getFirstAsync<any>(
-    `SELECT COALESCE(MAX(sort), -1) + 1 AS next FROM circles`
-  );
-  return row.next;
-}
-
 export async function countHangoutsForCircle(circleId: string): Promise<number> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ count: number }>(

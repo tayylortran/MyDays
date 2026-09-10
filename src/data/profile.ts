@@ -1,10 +1,11 @@
 import { getDb } from './db';
+import { photoFromRow, type PhotoRow } from './photos';
 import { Photo, ProfileSettings } from './types';
 
 // all photos taken on a given date, across every hangout that day
 export async function listPhotosForDate(date: string): Promise<Photo[]> {
   const db = await getDb();
-  const rows = await db.getAllAsync<any>(
+  const rows = await db.getAllAsync<PhotoRow>(
     `SELECT p.id, p.hangout_id, p.uri, p.thumb_uri, p.sort, p.updated_at
      FROM photos p
      JOIN hangouts h ON h.id = p.hangout_id
@@ -12,16 +13,13 @@ export async function listPhotosForDate(date: string): Promise<Photo[]> {
      ORDER BY p.sort`,
     [date]
   );
-  return rows.map((r) => ({
-    id: r.id, hangoutId: r.hangout_id, uri: r.uri,
-    thumbUri: r.thumb_uri ?? undefined, sort: r.sort, updatedAt: r.updated_at,
-  }));
+  return rows.map(photoFromRow);
 }
 
 // the chosen face photo per date, for a whole month -> { "2026-08-14": "<uri>" }
 export async function faceUrisForMonth(month: string): Promise<Record<string, string>> {
   const db = await getDb();
-  const rows = await db.getAllAsync<any>(
+  const rows = await db.getAllAsync<{ date: string; uri: string }>(
     `SELECT f.date AS date, p.uri AS uri
      FROM day_faces f
      JOIN photos p ON p.id = f.photo_id

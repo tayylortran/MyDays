@@ -7,7 +7,7 @@ import { hangoutDate, hangoutSerif } from './hangoutStyles';
 import type { HangoutEditorController } from './useHangoutEditor';
 
 // The surrounding flow owns the native Modal so view/edit never stack modals.
-export function HangoutEditorModal({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
+export function HangoutEditorForm({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
   const insets = useSafeAreaInsets();
   if (controller.state.mode !== 'edit') return null;
   const { draft, original } = controller.state;
