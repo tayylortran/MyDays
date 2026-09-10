@@ -20,6 +20,7 @@ export interface Repository {
 
   faceUrisForMonth(month: string): Promise<Record<string, string>>;
   countProfilePhotos(): Promise<number>;
+  getDayFace(date: string): Promise<string | null>;
   setDayFace(date: string, photoId: string): Promise<void>;
   getProfileSettings(): Promise<ProfileSettings>;
   saveProfileSettings(settings: ProfileSettings): Promise<void>;

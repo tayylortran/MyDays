@@ -42,6 +42,14 @@ export async function countProfilePhotos(): Promise<number> {
   return row?.count ?? 0;
 }
 
+export async function getDayFace(date: string): Promise<string | null> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ photo_id: string }>(
+    'SELECT photo_id FROM day_faces WHERE date = ?', [date]
+  );
+  return row?.photo_id ?? null;
+}
+
 export async function setDayFace(date: string, photoId: string): Promise<void> {
   const db = await getDb();
   await db.runAsync(

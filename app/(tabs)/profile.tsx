@@ -78,6 +78,10 @@ export default function Profile() {
       <ChooseDayFaceModal
         openDate={profile.openDate}
         dayPhotos={profile.dayPhotos}
+        selectedPhotoId={profile.selectedPhotoId}
+        onSelectPhoto={profile.setSelectedPhotoId}
+        saving={profile.savingPhoto}
+        error={profile.photoError}
         onClose={profile.closeDay}
         onChooseFace={profile.chooseFace}
       />

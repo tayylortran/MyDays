@@ -3,7 +3,7 @@ import { ProfileSettings, Photo } from '@/src/data/types';
 import { useCalendarMonth } from '@/src/features/calendar/CalendarMonthProvider';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
 export function useProfileScreen() {
@@ -14,6 +14,10 @@ export function useProfileScreen() {
   const [settings, setSettings] = useState<ProfileSettings>({ username: '', photoUri: null });
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [dayPhotos, setDayPhotos] = useState<Photo[]>([]);
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+  const picker = useRef({ request: 0, saving: false });
   const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draftUsername, setDraftUsername] = useState('');
@@ -31,10 +35,6 @@ export function useProfileScreen() {
     setTotalProfilePhotos(nextTotal);
   }, [repo, year, month]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
   useFocusEffect(
     useCallback(() => {
       load();
@@ -42,21 +42,45 @@ export function useProfileScreen() {
   );
 
   const openDay = async (date: string) => {
-    const photos = await repo.listPhotosForDate(date);
-    if (photos.length === 0) return;
-    setDayPhotos(photos);
-    setOpenDate(date);
+    if (picker.current.saving) return;
+    const request = ++picker.current.request;
+    try {
+      const [photos, currentId] = await Promise.all([
+        repo.listPhotosForDate(date), repo.getDayFace(date),
+      ]);
+      if (request !== picker.current.request || photos.length === 0) return;
+      setDayPhotos(photos);
+      setSelectedPhotoId(photos.some((photo) => photo.id === currentId) ? currentId : null);
+      setPhotoError('');
+      setOpenDate(date);
+    } catch {
+      if (request === picker.current.request) Alert.alert('Could not load photos', 'Please try again.');
+    }
   };
 
   const closeDay = () => {
+    if (picker.current.saving) return;
+    picker.current.request += 1;
     setOpenDate(null);
   };
 
-  const chooseFace = async (photoId: string) => {
-    if (!openDate) return;
-    await repo.setDayFace(openDate, photoId);
+  const chooseFace = async () => {
+    if (!openDate || !selectedPhotoId || picker.current.saving) return;
+    picker.current.saving = true;
+    setSavingPhoto(true);
+    setPhotoError('');
+    try {
+      await repo.setDayFace(openDate, selectedPhotoId);
+    } catch {
+      setPhotoError('Could not save this photo. Please try again.');
+      return;
+    } finally {
+      picker.current.saving = false;
+      setSavingPhoto(false);
+    }
     setOpenDate(null);
-    await load();
+    try { await load(); }
+    catch { Alert.alert('Photo saved', 'Could not refresh your profile. Reopen this tab to try again.'); }
   };
 
   const openSettings = () => {
@@ -114,6 +138,10 @@ export function useProfileScreen() {
     gridPhotos,
     openDate,
     dayPhotos,
+    selectedPhotoId,
+    setSelectedPhotoId,
+    savingPhoto,
+    photoError,
     viewMode,
     settingsOpen,
     draftUsername,
