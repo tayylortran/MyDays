@@ -11,11 +11,17 @@ export default function Home() {
   //it holds all the actions and data for this screen. 
 
 
+  const monthKey = `${calendar.year}-${String(calendar.month + 1).padStart(2, '0')}`;
+  const hangoutCount = Object.entries(calendar.byDate)
+    .filter(([date]) => date.startsWith(`${monthKey}-`))
+    .reduce((total, [, hangouts]) => total + hangouts.length, 0);
+
   return (
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
       <MonthHeader //component
         month={calendar.month} //"passing props".
         year={calendar.year}
+        subtitle={`${hangoutCount} ${hangoutCount === 1 ? 'hangout' : 'hangouts'}`}
         onPrev={calendar.prev}
         onNext={calendar.next}
       />

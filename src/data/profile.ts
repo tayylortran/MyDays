@@ -33,6 +33,17 @@ export async function faceUrisForMonth(month: string): Promise<Record<string, st
   return map;
 }
 
+// Count unique displayed photos across all dates, excluding missing photo records.
+export async function countProfilePhotos(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(DISTINCT p.id) AS count
+     FROM day_faces f
+     JOIN photos p ON p.id = f.photo_id`
+  );
+  return row?.count ?? 0;
+}
+
 export async function setDayFace(date: string, photoId: string): Promise<void> {
   const db = await getDb();
   await db.runAsync(

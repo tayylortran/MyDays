@@ -51,6 +51,9 @@ export default function Profile() {
       <MonthHeader
         month={profile.month}
         year={profile.year}
+        subtitle={profile.totalProfilePhotos === null
+          ? undefined
+          : `${profile.totalProfilePhotos} ${profile.totalProfilePhotos === 1 ? 'photo' : 'photos'} total`}
         onPrev={profile.prev}
         onNext={profile.next}
       />

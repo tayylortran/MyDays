@@ -24,6 +24,7 @@ export interface Repository {
 ): Promise<LibraryPhotoPage>;
 
   faceUrisForMonth(month: string): Promise<Record<string, string>>;
+  countProfilePhotos(): Promise<number>;
   setDayFace(date: string, photoId: string): Promise<void>;
   getProfileSettings(): Promise<ProfileSettings>;
   saveProfileSettings(settings: ProfileSettings): Promise<void>;

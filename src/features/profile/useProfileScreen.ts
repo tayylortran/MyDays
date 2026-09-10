@@ -10,6 +10,7 @@ export function useProfileScreen() {
   const repo = useRepo();
   const { year, month, prev, next } = useCalendarMonth();
   const [faces, setFaces] = useState<Record<string, string>>({});
+  const [totalProfilePhotos, setTotalProfilePhotos] = useState<number | null>(null);
   const [settings, setSettings] = useState<ProfileSettings>({ username: '', photoUri: null });
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [dayPhotos, setDayPhotos] = useState<Photo[]>([]);
@@ -20,12 +21,14 @@ export function useProfileScreen() {
 
   const load = useCallback(async () => {
     const key = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const [nextFaces, nextSettings] = await Promise.all([
+    const [nextFaces, nextSettings, nextTotal] = await Promise.all([
       repo.faceUrisForMonth(key),
       repo.getProfileSettings(),
+      repo.countProfilePhotos(),
     ]);
     setFaces(nextFaces);
     setSettings(nextSettings);
+    setTotalProfilePhotos(nextTotal);
   }, [repo, year, month]);
 
   useEffect(() => {
@@ -105,6 +108,7 @@ export function useProfileScreen() {
     year,
     month,
     faces,
+    totalProfilePhotos,
     username: settings.username,
     photoUri: settings.photoUri,
     gridPhotos,
