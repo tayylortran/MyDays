@@ -5,17 +5,19 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: '#333' }}>
       <Tabs.Screen
+        name="pictures"
+        options={{
+          title: 'Pictures',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="images-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="index"
         options={{
           title: 'Calendar',
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="pictures"
-        options={{
-          title: 'Pictures',
-          tabBarIcon: ({ color, size }) => <Ionicons name="images-outline" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
