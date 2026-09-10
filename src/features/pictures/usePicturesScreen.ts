@@ -12,6 +12,7 @@ export function usePicturesScreen() {
   const [circleId, setCircleId] = useState<string | undefined>();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [photos, setPhotos] = useState<LibraryPhoto[]>([]);
+  const [totalPhotos, setTotalPhotos] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hasMore, setHasMore] = useState(false);
@@ -34,17 +35,19 @@ export function usePicturesScreen() {
       if (reset) {
         cursor.current = null;
         setPhotos([]);
+        setTotalPhotos(null);
         setHasMore(false);
       }
 
       try {
-        const [page, nextCircles] = await Promise.all([
+        const [page, nextCircles, total] = await Promise.all([
           repo.listLibraryPhotos({
             circleId,
             cursor: reset ? undefined : cursor.current ?? undefined,
             limit: PAGE_SIZE,
           }),
           reset ? repo.listCircles() : Promise.resolve(null),
+          reset ? repo.countLibraryPhotos(circleId) : Promise.resolve(null),
         ]);
 
         // Ignore a response from an old filter or closed screen.
@@ -63,6 +66,7 @@ export function usePicturesScreen() {
           }
         }
 
+        if (total !== null) setTotalPhotos(total);
         setPhotos((previous) => {
           if (reset) return page.items;
 
@@ -108,6 +112,7 @@ export function usePicturesScreen() {
     requestId.current += 1;
     cursor.current = null;
     setPhotos([]);
+    setTotalPhotos(null);
     setHasMore(false);
     setLoading(true);
     setError('');
@@ -118,6 +123,7 @@ export function usePicturesScreen() {
     circleId,
     circles,
     photos,
+    totalPhotos,
     loading,
     error,
     hasMore,

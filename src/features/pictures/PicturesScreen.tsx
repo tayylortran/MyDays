@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import {
     ActivityIndicator,
     FlatList,
+    Platform,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -25,7 +26,14 @@ export default function PicturesScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <Text style={styles.title}>Pictures</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Pictures</Text>
+        <Text style={styles.subtitle} accessibilityLiveRegion="polite">
+          {pictures.totalPhotos === null
+            ? pictures.loading ? 'Loading photos…' : 'Photos unavailable'
+            : `${pictures.totalPhotos} ${pictures.totalPhotos === 1 ? 'photo' : 'photos'}`}
+        </Text>
+      </View>
 
       <View>
         <ScrollView
@@ -41,6 +49,7 @@ export default function PicturesScreen() {
                 key={filter.id ?? 'all'}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
+                hitSlop={{ top: 6, bottom: 6 }}
                 onPress={() => pictures.selectCircle(filter.id)}
                 style={[
                   styles.filter,
@@ -136,38 +145,57 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#333',
+  header: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 16,
+    paddingBottom: 14,
+  },
+  title: {
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }),
+    fontSize: 40,
+    fontWeight: '400',
+    letterSpacing: -1,
+    color: '#24211d',
+  },
+  subtitle: {
+    marginTop: 6,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: '#756f66',
   },
   filters: {
     paddingHorizontal: 16,
+    paddingTop: 6,
     paddingBottom: 16,
-    gap: 8,
+    gap: 6,
   },
   filter: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    minHeight: 44,
-    paddingHorizontal: 16,
+    minHeight: 32,
+    minWidth: 44,
+    paddingHorizontal: 10,
     justifyContent: 'center',
-    borderRadius: 22,
-    backgroundColor: '#eee',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e7e2da',
+    backgroundColor: '#fff',
   },
   selectedFilter: {
-    backgroundColor: '#333',
+    backgroundColor: '#eee8df',
+    borderColor: '#d3c8b9',
   },
   filterText: {
     color: '#333',
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
   },
   selectedFilterText: {
-    color: '#fff',
+    color: '#24211d',
+    fontWeight: '600',
   },
   list: {
     flex: 1,

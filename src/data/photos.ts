@@ -38,6 +38,17 @@ export async function listPhotos(hangoutId: string): Promise<Photo[]> {
 
 type LibraryPhotoRow = PhotoRow & { date: string };
 
+export async function countLibraryPhotos(circleId?: string): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) AS count FROM photos p
+     JOIN hangouts h ON h.id = p.hangout_id
+     ${circleId === undefined ? '' : 'WHERE h.circle_id = ?'}`,
+    circleId === undefined ? [] : [circleId]
+  );
+  return row?.count ?? 0;
+}
+
 export async function listLibraryPhotos(
   options: LibraryPhotoOptions
 ): Promise<LibraryPhotoPage> {

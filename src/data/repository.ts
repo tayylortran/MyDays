@@ -17,6 +17,7 @@ export interface Repository {
   listPhotos(hangoutId: string): Promise<Photo[]>;
   listPhotosForDate(date: string): Promise<Photo[]>;
   listLibraryPhotos(options: LibraryPhotoOptions): Promise<LibraryPhotoPage>;
+  countLibraryPhotos(circleId?: string): Promise<number>;
 
   faceUrisForMonth(month: string): Promise<Record<string, string>>;
   countProfilePhotos(): Promise<number>;
