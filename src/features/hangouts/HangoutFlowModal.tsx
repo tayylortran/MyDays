@@ -1,6 +1,6 @@
-import type { Circle } from '@/src/data/types';
+import { PhotoImage } from '@/src/components/PhotoImage';
+import type { Circle, Photo } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,7 @@ import { HangoutEditorForm } from './HangoutEditorForm';
 import type { HangoutEditorController } from './useHangoutEditor';
 
 export function HangoutFlowModal({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Photo | null>(null);
   const insets = useSafeAreaInsets();
   const mode = controller.state.mode;
   useEffect(() => { setPreview(null); }, [mode]);
@@ -33,7 +33,7 @@ export function HangoutFlowModal({ controller, circles }: { controller: HangoutE
       )}
       {preview && (
         <View style={styles.preview} accessibilityViewIsModal>
-          <Image source={{ uri: preview }} style={StyleSheet.absoluteFill} contentFit="contain" />
+          <PhotoImage photo={preview} style={StyleSheet.absoluteFill} contentFit="contain" />
           <Pressable accessibilityRole="button" accessibilityLabel="Close photo preview" onPress={() => setPreview(null)}
             style={[styles.close, { top: insets.top + 12 }]}>
             <Ionicons name="close" size={24} color="#fff" />

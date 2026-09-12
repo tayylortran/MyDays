@@ -9,7 +9,7 @@ import { Alert } from 'react-native';
 export function useProfileScreen() {
   const repo = useRepo();
   const { year, month, prev, next } = useCalendarMonth();
-  const [faces, setFaces] = useState<Record<string, string>>({});
+  const [faces, setFaces] = useState<Record<string, Photo>>({});
   const [totalProfilePhotos, setTotalProfilePhotos] = useState<number | null>(null);
   const [settings, setSettings] = useState<ProfileSettings>({ username: '', photoUri: null });
   const [openDate, setOpenDate] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export function useProfileScreen() {
   const load = useCallback(async () => {
     const key = `${year}-${String(month + 1).padStart(2, '0')}`;
     const [nextFaces, nextSettings, nextTotal] = await Promise.all([
-      repo.faceUrisForMonth(key),
+      repo.facesForMonth(key),
       repo.getProfileSettings(),
       repo.countProfilePhotos(),
     ]);
@@ -123,9 +123,9 @@ export function useProfileScreen() {
 
   const gridPhotos = Object.entries(faces)
     .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-    .map(([date, uri]) => ({
+    .map(([date, photo]) => ({
       date,
-      uri,
+      ...photo,
     }));
 
   return {

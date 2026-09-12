@@ -1,17 +1,14 @@
+import { PhotoImage } from '@/src/components/PhotoImage';
+import type { LibraryPhoto } from '@/src/data/types';
 import { useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, View } from 'react-native';
-
-type GridPhoto = {
-  date: string;
-  uri: string;
-};
+import { Modal, Pressable, ScrollView, View } from 'react-native';
 
 type ProfilePhotoGridProps = {
-  photos: GridPhoto[];
+  photos: LibraryPhoto[];
 };
 
 export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
-  const [selectedPhotoUri, setSelectedPhotoUri] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<LibraryPhoto | null>(null);
 
   return (
     <>
@@ -22,17 +19,18 @@ export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
               key={photo.date}
               accessibilityLabel={`View photo from ${photo.date}`}
               accessibilityRole="button"
-              onPress={() => setSelectedPhotoUri(photo.uri)}
+              onPress={() => setSelectedPhoto(photo)}
               style={{ width: '33%' }}
             >
-              <Image
-                source={{ uri: photo.uri }}
+              <PhotoImage
+                photo={photo}
+                thumbnail
                 style={{
                   width: '100%',
                   aspectRatio: 0.8,
                   backgroundColor: '#eee',
                 }}
-                resizeMode="cover"
+                contentFit="cover"
               />
             </Pressable>
           ))}
@@ -40,22 +38,22 @@ export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
       </ScrollView>
 
       <Modal
-        visible={selectedPhotoUri !== null}
+        visible={selectedPhoto !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setSelectedPhotoUri(null)}
+        onRequestClose={() => setSelectedPhoto(null)}
       >
         <Pressable
           accessibilityLabel="Close photo preview"
-          onPress={() => setSelectedPhotoUri(null)}
+          onPress={() => setSelectedPhoto(null)}
           style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.88)', padding: 20 }}
         >
           <Pressable onPress={() => {}} style={{ width: '100%', height: '80%' }}>
-            {selectedPhotoUri && (
-              <Image
-                source={{ uri: selectedPhotoUri }}
+            {selectedPhoto && (
+              <PhotoImage
+                photo={selectedPhoto}
                 style={{ width: '100%', height: '100%' }}
-                resizeMode="contain"
+                contentFit="contain"
               />
             )}
           </Pressable>

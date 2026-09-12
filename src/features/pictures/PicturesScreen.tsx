@@ -1,4 +1,4 @@
-import { Image } from 'expo-image';
+import { PhotoImage } from '@/src/components/PhotoImage';
 import {
     ActivityIndicator,
     FlatList,
@@ -84,11 +84,11 @@ export default function PicturesScreen() {
         onRefresh={() => void pictures.refresh()}
         renderItem={({ item }) => (
           <View style={styles.cell}>
-            <Image
-              source={{ uri: item.thumbUri ?? item.uri }}
+            <PhotoImage
+              photo={item}
+              thumbnail
               style={styles.image}
               contentFit="cover"
-              cachePolicy="disk"
               accessible
               accessibilityLabel={`Photo from ${item.date}`}
             />

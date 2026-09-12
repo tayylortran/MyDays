@@ -1,6 +1,6 @@
+import { PhotoImage } from '@/src/components/PhotoImage';
 import type { Photo } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -50,7 +50,7 @@ export function ChooseDayFaceModal({
                     accessibilityState={{ selected, disabled: saving }} disabled={saving}
                     onPress={() => onSelectPhoto(item.id)}
                     style={[styles.photoButton, selected && styles.selected]}>
-                    <Image source={{ uri: item.thumbUri ?? item.uri }} contentFit="cover" style={styles.photo} />
+                    <PhotoImage photo={item} thumbnail contentFit="cover" style={styles.photo} />
                     {selected && (
                       <View style={styles.check}>
                         <Ionicons name="checkmark" size={14} color="#fff" />

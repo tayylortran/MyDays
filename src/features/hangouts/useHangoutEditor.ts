@@ -1,11 +1,11 @@
 import { useRepo } from '@/src/data/RepositoryProvider';
-import { MAX_HANGOUT_PHOTOS, type Circle, type Hangout, type SavedHangout } from '@/src/data/types';
+import { MAX_HANGOUT_PHOTOS, type Circle, type Hangout, type Photo, type SavedHangout } from '@/src/data/types';
 import { newId } from '@/src/lib/id';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Keyboard } from 'react-native';
 
-export type DraftPhoto = { id: string; uri: string; kind: 'existing' | 'new' };
+export type DraftPhoto = Pick<Photo, 'id' | 'uri' | 'thumbUri' | 'cacheKey' | 'thumbCacheKey'> & { kind: 'existing' | 'new' };
 export type HangoutDraft = { hangout: Hangout; photos: DraftPhoto[] };
 type EditorState =
   | { mode: 'closed' }
@@ -61,7 +61,7 @@ export function useHangoutEditor(
     if (state.mode !== 'view' || busy.current) return;
     startDraft({
       hangout: { ...state.entry.hangout },
-      photos: state.entry.photos.map((photo) => ({ id: photo.id, uri: photo.uri, kind: 'existing' })),
+      photos: state.entry.photos.map((photo) => ({ ...photo, kind: 'existing' })),
     }, state.entry);
   }
 

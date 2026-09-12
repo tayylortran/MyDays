@@ -1,6 +1,6 @@
-import type { Circle } from '@/src/data/types';
+import { PhotoImage } from '@/src/components/PhotoImage';
+import type { Circle, Photo } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,7 +10,7 @@ import type { HangoutEditorController } from './useHangoutEditor';
 export function HangoutDetailView({ controller, circles, onPreview }: {
   controller: HangoutEditorController;
   circles: Circle[];
-  onPreview: (uri: string) => void;
+  onPreview: (photo: Photo) => void;
 }) {
   const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,7 +25,7 @@ export function HangoutDetailView({ controller, circles, onPreview }: {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={[styles.cover, { backgroundColor: circleTint(color) }]}>
-          {cover ? <Image source={{ uri: cover.uri }} contentFit="cover" style={StyleSheet.absoluteFill} /> : (
+          {cover ? <PhotoImage photo={cover} contentFit="cover" style={StyleSheet.absoluteFill} /> : (
             <Ionicons name="images-outline" size={48} color={color} />
           )}
         </View>
@@ -41,8 +41,8 @@ export function HangoutDetailView({ controller, circles, onPreview }: {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photos}>
               {photos.map((photo, index) => (
                 <Pressable key={photo.id} accessibilityRole="button" accessibilityLabel={`View photo ${index + 1}`}
-                  onPress={() => onPreview(photo.uri)}>
-                  <Image source={{ uri: photo.thumbUri ?? photo.uri }} contentFit="cover" style={styles.thumbnail} />
+                  onPress={() => onPreview(photo)}>
+                  <PhotoImage photo={photo} thumbnail contentFit="cover" style={styles.thumbnail} />
                 </Pressable>
               ))}
             </ScrollView>

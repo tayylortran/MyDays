@@ -20,6 +20,9 @@ export interface Photo {
     hangoutId: string;
     uri: string;
     thumbUri?: string;
+    // Repositories can supply immutable asset keys when download URLs expire.
+    cacheKey?: string;
+    thumbCacheKey?: string;
     sort: number;
     updatedAt: number;
 }

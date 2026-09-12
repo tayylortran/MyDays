@@ -19,7 +19,7 @@ export interface Repository {
   listLibraryPhotos(options: LibraryPhotoOptions): Promise<LibraryPhotoPage>;
   countLibraryPhotos(circleId?: string): Promise<number>;
 
-  faceUrisForMonth(month: string): Promise<Record<string, string>>;
+  facesForMonth(month: string): Promise<Record<string, Photo>>;
   countProfilePhotos(): Promise<number>;
   getDayFace(date: string): Promise<string | null>;
   setDayFace(date: string, photoId: string): Promise<void>;

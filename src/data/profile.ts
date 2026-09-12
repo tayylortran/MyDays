@@ -16,18 +16,18 @@ export async function listPhotosForDate(date: string): Promise<Photo[]> {
   return rows.map(photoFromRow);
 }
 
-// the chosen face photo per date, for a whole month -> { "2026-08-14": "<uri>" }
-export async function faceUrisForMonth(month: string): Promise<Record<string, string>> {
+// Return both sizes so profile grids and previews reuse the same photo.
+export async function facesForMonth(month: string): Promise<Record<string, Photo>> {
   const db = await getDb();
-  const rows = await db.getAllAsync<{ date: string; uri: string }>(
-    `SELECT f.date AS date, p.uri AS uri
+  const rows = await db.getAllAsync<PhotoRow & { date: string }>(
+    `SELECT f.date AS date, p.*
      FROM day_faces f
      JOIN photos p ON p.id = f.photo_id
      WHERE f.date LIKE ?`,
     [`${month}%`]
   );
-  const map: Record<string, string> = {};
-  rows.forEach((r) => { map[r.date] = r.uri; });
+  const map: Record<string, Photo> = {};
+  rows.forEach((r) => { map[r.date] = photoFromRow(r); });
   return map;
 }
 

@@ -16,7 +16,7 @@ export const localRepository: Repository = {
   listPhotosForDate: profile.listPhotosForDate,
   listLibraryPhotos: photos.listLibraryPhotos,
   countLibraryPhotos: photos.countLibraryPhotos,
-  faceUrisForMonth: profile.faceUrisForMonth,
+  facesForMonth: profile.facesForMonth,
   countProfilePhotos: profile.countProfilePhotos,
   getDayFace: profile.getDayFace,
   setDayFace: profile.setDayFace,

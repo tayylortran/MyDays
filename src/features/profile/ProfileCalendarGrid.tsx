@@ -1,10 +1,12 @@
+import { PhotoImage } from '@/src/components/PhotoImage';
+import type { Photo } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 type ProfileCalendarGridProps = {
   year: number;
   month: number;
-  faces: Record<string, string>;
+  faces: Record<string, Photo>;
   onPressDay: (date: string) => void;
 };
 
@@ -42,10 +44,11 @@ export function ProfileCalendarGrid({
                   style={{ flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee' }}
                 >
                   {faces[date] ? (
-                    <Image
-                      source={{ uri: faces[date] }}
+                    <PhotoImage
+                      photo={faces[date]}
+                      thumbnail
                       style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
+                      contentFit="cover"
                     />
                   ) : (
                     <Text style={{ fontSize: 11, color: '#bbb', padding: 4 }}>{Number(date.slice(8))}</Text>

@@ -1,6 +1,6 @@
+import { PhotoImage } from '@/src/components/PhotoImage';
 import { MAX_HANGOUT_PHOTOS, type Circle } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hangoutDate, hangoutSerif } from './hangoutStyles';
@@ -55,7 +55,7 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
             )}
             {draft.photos.map((photo, index) => (
               <View key={photo.id} style={styles.photoItem}>
-                <Image source={{ uri: photo.uri }} style={styles.photo} contentFit="cover" />
+                <PhotoImage photo={photo} thumbnail style={styles.photo} contentFit="cover" />
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove photo ${index + 1}`} disabled={disabled}
                   onPress={() => controller.removePhoto(photo.id)} style={styles.removePhoto}>
                   <Ionicons name="close" size={17} color="#fff" />

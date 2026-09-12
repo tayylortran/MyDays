@@ -1,8 +1,8 @@
 import { Directory, File, Paths } from 'expo-file-system';
-import * as ImageManipulator from 'expo-image-manipulator';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { Platform } from 'react-native';
 import { newId } from '../lib/id';
+import { preparePhoto } from '../lib/preparePhoto';
 import { getDb } from './db';
 import { photoFromRow, type PhotoRow } from './photos';
 import { MAX_HANGOUT_PHOTOS, type Hangout, type Photo, type SaveHangoutInput, type SavedHangout } from './types';
@@ -68,17 +68,21 @@ export async function saveHangoutWithPhotos(input: SaveHangoutInput): Promise<Sa
     // Prepare files before opening a database transaction. No saved data changes yet.
     for (const photo of photos) {
       if (photo.kind !== 'new') continue;
-      const context = ImageManipulator.ImageManipulator.manipulate(photo.uri);
-      const original = await context.renderAsync();
-      if (Math.max(original.width, original.height) > 1200) {
-        context.resize(original.width >= original.height ? { width: 1200 } : { height: 1200 });
+      const prepared = await preparePhoto(photo.uri);
+      const filename = `${photo.id}-${newId()}`;
+      const destination = new File(photoDirectory, `${filename}.jpg`);
+      const thumbnail = new File(photoDirectory, `${filename}-thumb.jpg`);
+      createdUris.push(destination.uri, thumbnail.uri);
+      try {
+        new File(prepared.image.uri).copy(destination);
+        new File(prepared.thumbnail.uri).copy(thumbnail);
+      } finally {
+        for (const output of [prepared.image, prepared.thumbnail]) {
+          try { new File(output.uri).delete(); } catch { /* Temporary files remain in the OS cache. */ }
+        }
       }
-      const rendered = await context.renderAsync();
-      const compressed = await rendered.saveAsync({ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG });
-      const destination = new File(photoDirectory, `${photo.id}-${newId()}.jpg`);
-      createdUris.push(destination.uri);
-      new File(compressed.uri).copy(destination);
-      staged.push({ id: photo.id, hangoutId: hangout.id, uri: destination.uri, sort: 0, updatedAt: saved.hangout.updatedAt });
+      if (__DEV__) console.info('[Photo sizes]', { imageKB: Math.round(prepared.image.bytes / 1024), thumbnailKB: Math.round(prepared.thumbnail.bytes / 1024) });
+      staged.push({ id: photo.id, hangoutId: hangout.id, uri: destination.uri, thumbUri: thumbnail.uri, sort: 0, updatedAt: saved.hangout.updatedAt });
     }
 
     await transaction(db, async (tx) => {
