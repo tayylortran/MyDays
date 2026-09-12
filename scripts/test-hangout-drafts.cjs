@@ -74,6 +74,7 @@ function fixture({ width = 1600, height = 1200, failThumbnail = false } = {}) {
         let w = width, h = height, saves = 0;
         return {
           release() {},
+          reset() { w = width; h = height; },
           resize(size) {
             const scale = size.width ? size.width / w : size.height / h;
             w = Math.round(w * scale); h = Math.round(h * scale);
@@ -117,7 +118,7 @@ async function main() {
     assert.equal(f.tempFiles.size, 0, 'Prepared cache files are removed after copying');
     assert.deepEqual(f.renderedSizes.slice(0, 2), [
       { width: 1200, height: 900, compress: 0.7, format: 'jpeg' },
-      { width: 360, height: 270, compress: 0.65, format: 'jpeg' },
+      { width: 720, height: 540, compress: 0.8, format: 'jpeg' },
     ]);
     assert.ok(saved.photos.every((p) => p.thumbUri && p.thumbUri !== p.uri));
     assert.deepEqual(saved.photos.map((p) => p.id), ['a', 'b']);
@@ -184,7 +185,7 @@ async function main() {
     const f = fixture({ width, height });
     await f.api.saveHangoutWithPhotos({ mode: 'create', hangout: f.hangout, photos: [f.photo('a')] });
     for (const [index, size] of f.renderedSizes.entries()) {
-      assert.ok(Math.max(size.width, size.height) <= (index === 0 ? 1200 : 360));
+      assert.ok(Math.max(size.width, size.height) <= (index === 0 ? 1200 : 720));
       assert.ok(size.width <= width && size.height <= height, 'Small images are never upscaled');
     }
     f.sqlite.exec('UPDATE photos SET thumb_uri = NULL');

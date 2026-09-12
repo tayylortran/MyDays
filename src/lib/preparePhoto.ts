@@ -8,7 +8,8 @@ export async function preparePhoto(uri: string) {
   const outputs: { uri: string; bytes: number }[] = [];
   try {
     original = await context.renderAsync();
-    for (const [maxEdge, compress] of [[1200, 0.7], [360, 0.65]]) {
+    for (const [maxEdge, compress] of [[1200, 0.7], [720, 0.8]]) {
+      context.reset();
       if (Math.max(original.width, original.height) > maxEdge) {
         context.resize(original.width >= original.height ? { width: maxEdge } : { height: maxEdge });
       }
