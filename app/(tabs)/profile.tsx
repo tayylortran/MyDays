@@ -1,4 +1,5 @@
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
+import { HangoutsTestPanel } from '@/src/features/dev/HangoutsTestPanel';
 import { ChooseDayFaceModal } from '@/src/features/profile/ChooseDayFaceModal';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
 import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
@@ -13,6 +14,7 @@ export default function Profile() {
 
   return (
     <View style={{ flex: 1, paddingTop: 54, paddingHorizontal: 8 }}>
+      {__DEV__ && <HangoutsTestPanel />}
       <View style={{ alignItems: 'flex-end', marginBottom: 12 }}>
         <Pressable onPress={profile.openSettings} hitSlop={12}>
           <Ionicons name="settings-outline" size={22} color="#333" />
