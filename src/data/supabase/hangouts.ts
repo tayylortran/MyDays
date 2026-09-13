@@ -1,5 +1,5 @@
 import { supabase } from '@/src/lib/supabase';
-import type { Hangout, SaveHangoutInput } from '../types';
+import type { Hangout } from '../types';
 
 type HangoutRow = Omit<Hangout, 'circleId' | 'updatedAt'> & {
   circle_id: string;
@@ -38,34 +38,4 @@ export async function listHangouts(month: string): Promise<Hangout[]> {
     hangouts.push(...data.map(fromRow));
     if (data.length === 0 || (count !== null && hangouts.length >= count)) return hangouts;
   }
-}
-
-// Saves the hangout record only. Photo changes will use a separate atomic save.
-export async function saveHangout({ mode, hangout }: Pick<SaveHangoutInput, 'mode' | 'hangout'>): Promise<Hangout> {
-  if (!hangout.title.trim() || !hangout.circleId) {
-    throw new Error('Add a title and choose a circle.');
-  }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(hangout.date)) {
-    throw new Error('Use a hangout date in YYYY-MM-DD format.');
-  }
-  const values = {
-    title: hangout.title.trim(),
-    note: hangout.note.trim(),
-    circle_id: hangout.circleId,
-    updated_at: Date.now(),
-  };
-  const table = supabase.from('hangouts');
-  // RLS and the composite circle foreign key enforce ownership on the server.
-  const query = mode === 'create'
-    ? table.insert({ id: hangout.id, date: hangout.date, ...values })
-    : table.update(values).eq('id', hangout.id).eq('date', hangout.date);
-  const { data, error } = await query.select(columns).single<HangoutRow>();
-
-  if (error) {
-    if (mode === 'edit' && error.code === 'PGRST116') {
-      throw new Error('This hangout is unavailable or its date does not match. Reopen it to edit.');
-    }
-    throw error;
-  }
-  return fromRow(data);
 }
