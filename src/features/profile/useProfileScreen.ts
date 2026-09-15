@@ -116,7 +116,12 @@ export function useProfileScreen() {
       photoUri: draftPhotoUri,
     };
 
-    await repo.saveProfileSettings(nextSettings);
+    try {
+      await repo.saveProfileSettings(nextSettings);
+    } catch (error) {
+      Alert.alert('Could not save profile', error instanceof Error ? error.message : 'Please try again.');
+      return;
+    }
     setSettings(nextSettings);
     setSettingsOpen(false);
   };

@@ -101,7 +101,7 @@ export async function photoFromRow(row: PhotoRow): Promise<Photo> {
   return (await photosFromRows([row]))[0];
 }
 
-async function photosFromRows(rows: PhotoRow[]): Promise<Photo[]> {
+export async function photosFromRows(rows: PhotoRow[]): Promise<Photo[]> {
   const photos: Photo[] = [];
   // Bound each signing request, including days containing many hangouts.
   for (let offset = 0; offset < rows.length; offset += 100) {
