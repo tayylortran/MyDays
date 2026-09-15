@@ -17,6 +17,7 @@ create table storage.objects(bucket_id text, name text);
 \ir ../supabase/migrations/20260912000200_create_photos.sql
 \ir ../supabase/migrations/20260912000400_save_hangouts_with_photos.sql
 \ir ../supabase/migrations/20260915000000_create_profiles.sql
+\ir ../supabase/migrations/20260915000100_add_profile_avatars.sql
 
 insert into auth.users values ('00000000-0000-4000-8000-000000000001'), ('00000000-0000-4000-8000-000000000002');
 insert into public.circles(id,user_id,name,color,updated_at) values
@@ -27,6 +28,9 @@ from (values
  ('00000000-0000-4000-8000-000000000100','00000000-0000-4000-8000-000000001000'),
  ('00000000-0000-4000-8000-000000000101','00000000-0000-4000-8000-000000001001')
 ) t(op,photo) cross join (values ('image.jpg'),('thumb.jpg')) f(file);
+insert into storage.objects values
+ ('photos','00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000501.jpg'),
+ ('photos','00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000502.jpg');
 
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000001';
@@ -84,7 +88,8 @@ begin
     or (select count(*) from public.photo_file_cleanup where path like '%000000000100/%') <> 2 then raise exception 'Removal queue failed'; end if;
   if exists(select 1 from public.day_faces) then raise exception 'Deleted photo still selected'; end if;
   insert into public.day_faces(date, photo_id, updated_at) values ('2026-09-12','00000000-0000-4000-8000-000000001001',3);
-  insert into public.profiles(username, updated_at) values ('Sam',1);
+  insert into public.profiles(username, avatar_storage_path, updated_at) values
+    ('Sam','00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000501.jpg',1);
 end;
 $$;
 
@@ -99,6 +104,10 @@ begin
     raise exception 'Expected duplicate username';
   exception when unique_violation then null; end;
   insert into public.profiles(username, updated_at) values ('Other_User.1',1);
+  begin
+    update public.profiles set avatar_storage_path = '00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000501.jpg';
+    raise exception 'Expected avatar ownership check';
+  exception when check_violation then null; end;
   begin
     update public.profiles set username = 'SAM';
     raise exception 'Expected duplicate rename';
@@ -130,10 +139,30 @@ do $$ begin
   if exists(select 1 from public.photos) or (select count(*) from public.photo_file_cleanup where path like '%000000000101/%') <> 2 then raise exception 'Delete cascade queue failed'; end if;
   if exists(select 1 from public.day_faces) then raise exception 'Hangout deletion left profile selection'; end if;
   if (select username from public.profiles) <> 'Sam' then raise exception 'Owner username changed'; end if;
+  begin
+    update public.profiles set avatar_storage_path = '00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000599.jpg';
+    raise exception 'Expected missing avatar error';
+  exception when raise_exception then if sqlerrm not like 'Avatar upload is missing%' then raise; end if; end;
+  begin
+    update public.profiles set username = 'Other_User.1', avatar_storage_path = '00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000502.jpg';
+    raise exception 'Expected duplicate username rollback';
+  exception when unique_violation then null; end;
+  if exists(select 1 from public.photo_file_cleanup where path like '%/avatars/%') then raise exception 'Rejected profile save queued a live avatar'; end if;
+  if (select avatar_storage_path from public.profiles) not like '%501.jpg' then raise exception 'Rejected save changed avatar'; end if;
+  update public.profiles set username = 'SAM';
+  if exists(select 1 from public.photo_file_cleanup where path like '%/avatars/%') then raise exception 'Username edit queued the avatar'; end if;
+  update public.profiles set avatar_storage_path = '00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000502.jpg';
+  if (select count(*) from public.photo_file_cleanup where path like '%/avatars/%') <> 1 then raise exception 'Replacement did not queue old avatar'; end if;
+  begin
+    update public.profiles set avatar_storage_path = '00000000-0000-4000-8000-000000000001/avatars/00000000-0000-4000-8000-000000000501.jpg';
+    raise exception 'Expected queued avatar rejection';
+  exception when raise_exception then if sqlerrm not like 'Avatar upload is missing%' then raise; end if; end;
+  update public.profiles set avatar_storage_path = null;
+  if (select count(*) from public.photo_file_cleanup where path like '%/avatars/%') <> 2 then raise exception 'Avatar removal cleanup failed'; end if;
 end $$;
 reset role;
 do $$ begin
   if to_regclass('public.hangout_saves') is not null then raise exception 'History table still exists'; end if;
 end $$;
 delete from auth.users;
-\echo PASS: atomic saves, rollback, daily selections/date validation/cascades, case-insensitive usernames, owner isolation.
+\echo PASS: atomic saves, daily selections, usernames, avatar ownership/existence/replacement/removal, cleanup rollback, owner isolation.

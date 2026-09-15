@@ -1,5 +1,9 @@
 import { supabase } from '@/src/lib/supabase';
-import type { Photo } from '../types';
+import type { Photo, ProfileSettings } from '../types';
+import { File } from 'expo-file-system';
+import { newId } from '@/src/lib/id';
+import { preparePhoto } from '@/src/lib/preparePhoto';
+import { flushPhotoCleanup } from './saveHangout';
 import { photosFromRows, type PhotoRow } from './photos';
 
 async function currentUserId(): Promise<string> {
@@ -43,22 +47,61 @@ export async function countProfilePhotos(): Promise<number> {
   return count;
 }
 
-// Username storage is independent of the avatar upload, which is still local.
-export async function getUsername(): Promise<string> {
-  const { data, error } = await supabase.from('profiles').select('username')
-    .eq('user_id', await currentUserId()).maybeSingle<{ username: string }>();
+export async function getProfileSettings(): Promise<ProfileSettings> {
+  const { data, error } = await supabase.from('profiles').select('username, avatar_storage_path')
+    .eq('user_id', await currentUserId()).maybeSingle<{ username: string; avatar_storage_path: string | null }>();
   if (error) throw new Error(error.message);
-  return data?.username ?? '';
+  let photoUri: string | null = null;
+  if (data?.avatar_storage_path) {
+    const signed = await supabase.storage.from('photos').createSignedUrl(data.avatar_storage_path, 3600);
+    if (signed.error) throw new Error(signed.error.message);
+    photoUri = signed.data.signedUrl;
+  }
+  return { username: data?.username ?? '', photoUri };
 }
 
-export async function saveUsername(value: string): Promise<void> {
-  const username = value.trim();
+export async function saveProfileSettings(settings: ProfileSettings): Promise<void> {
+  const username = settings.username.trim();
   if (!/^[A-Za-z0-9_.]{3,30}$/.test(username)) {
-    throw new Error('Use 3–30 letters, numbers, underscores, or periods for your username.');
+    throw new Error('Use 3 to 30 letters, numbers, underscores, or periods for your username.');
   }
-  const { error } = await supabase.from('profiles').upsert({
-    user_id: await currentUserId(), username, updated_at: Date.now(),
-  }, { onConflict: 'user_id' });
-  if (error?.code === '23505') throw new Error('That username is already taken. Choose another.');
-  if (error) throw new Error(error.message);
+  const userId = await currentUserId();
+  const bucket = supabase.storage.from('photos');
+  let avatarPath: string | null = null;
+  if (settings.photoUri) {
+    if (/^https?:/i.test(settings.photoUri)) {
+      // Reuse our signed URL's path even after its token expires. Never save the URL.
+      const base = bucket.getPublicUrl('').data.publicUrl.replace('/object/public/', '/object/sign/');
+      if (!settings.photoUri.startsWith(base)) throw new Error('Choose an avatar from your photo library.');
+      avatarPath = decodeURIComponent(settings.photoUri.slice(base.length).split('?')[0]);
+      if (!avatarPath.startsWith(userId + '/avatars/')) throw new Error('Choose an avatar from your photo library.');
+    } else {
+      const prepared = await preparePhoto(settings.photoUri);
+      try {
+        // The existing 720px JPEG is sufficient for an avatar; upload only this size.
+        if (prepared.thumbnail.bytes <= 0 || prepared.thumbnail.bytes > 5 * 1024 * 1024) throw new Error('The avatar must be between 1 byte and 5 MB.');
+        avatarPath = userId + '/avatars/' + newId() + '.jpg';
+        const { error } = await bucket.upload(avatarPath, await new File(prepared.thumbnail.uri).arrayBuffer(), {
+          contentType: 'image/jpeg', cacheControl: '3600', upsert: false,
+        });
+        if (error) throw new Error(error.message);
+      } finally {
+        for (const output of [prepared.image, prepared.thumbnail]) {
+          try { new File(output.uri).delete(); } catch { /* OS cache cleanup is the fallback. */ }
+        }
+      }
+    }
+  }
+  // One row update saves the username/avatar together and queues the replaced file.
+  // Failed/uncertain saves preserve the upload for manual cleanup, like hangout saves.
+  const unconfirmed = 'Could not confirm the profile save. Reconnect and reopen your profile before trying again.';
+  let response;
+  try {
+    response = await supabase.from('profiles').upsert({
+      user_id: userId, username, avatar_storage_path: avatarPath, updated_at: Date.now(),
+    }, { onConflict: 'user_id' });
+  } catch { throw new Error(unconfirmed); }
+  if (response.error?.code === '23505') throw new Error('That username is already taken. Choose another.');
+  if (response.error) throw new Error(/^[0-9A-Z]{5}$/.test(response.error.code) ? response.error.message : unconfirmed);
+  await flushPhotoCleanup();
 }

@@ -124,6 +124,11 @@ export function useProfileScreen() {
     }
     setSettings(nextSettings);
     setSettingsOpen(false);
+    try {
+      setSettings(await repo.getProfileSettings());
+    } catch {
+      Alert.alert('Profile saved', 'Could not refresh your profile. Reopen this tab to try again.');
+    }
   };
 
   const gridPhotos = Object.entries(faces)
