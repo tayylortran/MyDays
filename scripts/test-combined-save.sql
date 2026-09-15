@@ -16,7 +16,6 @@ create table storage.objects(bucket_id text, name text);
 \ir ../supabase/migrations/20260912000100_create_hangouts.sql
 \ir ../supabase/migrations/20260912000200_create_photos.sql
 \ir ../supabase/migrations/20260912000400_save_hangouts_with_photos.sql
-\ir ../supabase/migrations/20260912000500_simplify_hangout_save.sql
 
 insert into auth.users values ('00000000-0000-4000-8000-000000000001'), ('00000000-0000-4000-8000-000000000002');
 insert into public.circles(id,user_id,name,color,updated_at) values
