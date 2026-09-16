@@ -9,13 +9,16 @@ export const localRepository: Repository = {
   saveCircle: circles.saveCircle,
   countHangoutsForCircle: circles.countHangoutsForCircle,
   moveHangoutsAndDeleteCircle: circles.moveHangoutsAndDeleteCircle,
+
   listHangouts: hangouts.listHangouts,
   saveHangoutWithPhotos: hangouts.saveHangoutWithPhotos,
   deleteHangout: hangouts.deleteHangout,
+
   listPhotos: photos.listPhotos,
   listPhotosForDate: profile.listPhotosForDate,
   listLibraryPhotos: photos.listLibraryPhotos,
   countLibraryPhotos: photos.countLibraryPhotos,
+
   facesForMonth: profile.facesForMonth,
   countProfilePhotos: profile.countProfilePhotos,
   getDayFace: profile.getDayFace,
