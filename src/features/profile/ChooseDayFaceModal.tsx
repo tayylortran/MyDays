@@ -8,7 +8,8 @@ type ChooseDayFaceModalProps = {
   openDate: string | null;
   dayPhotos: Photo[];
   selectedPhotoId: string | null;
-  onSelectPhoto: (id: string) => void;
+  currentPhotoId: string | null;
+  onSelectPhoto: (id: string | null) => void;
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -16,7 +17,7 @@ type ChooseDayFaceModalProps = {
 };
 
 export function ChooseDayFaceModal({
-  openDate, dayPhotos, selectedPhotoId, onSelectPhoto, saving, error, onClose, onChooseFace,
+  openDate, dayPhotos, selectedPhotoId, currentPhotoId, onSelectPhoto, saving, error, onClose, onChooseFace,
 }: ChooseDayFaceModalProps) {
   const insets = useSafeAreaInsets();
   const [year, month, day] = (openDate ?? '').split('-').map(Number);
@@ -24,7 +25,7 @@ export function ChooseDayFaceModal({
     ? new Date(year, month - 1, day)
         .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '';
-  const disabled = saving || !selectedPhotoId;
+  const disabled = saving || (selectedPhotoId === null && currentPhotoId === null);
 
   return (
     <Modal visible={openDate !== null} transparent animationType="slide" onRequestClose={onClose}>
@@ -33,7 +34,7 @@ export function ChooseDayFaceModal({
         <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
           <View style={styles.handle} />
           <Text style={styles.title}>Cover for {date}</Text>
-          <Text style={styles.caption}>{"Pick this day's photo"}</Text>
+          <Text style={styles.caption}>Tap the selected photo again to remove it.</Text>
           <FlatList
             key={openDate ?? 'closed'}
             data={dayPhotos}
@@ -46,9 +47,9 @@ export function ChooseDayFaceModal({
               const selected = item.id === selectedPhotoId;
               return (
                 <View style={styles.cell}>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Select photo"
+                  <Pressable accessibilityRole="button" accessibilityLabel={selected ? 'Deselect photo' : 'Select photo'}
                     accessibilityState={{ selected, disabled: saving }} disabled={saving}
-                    onPress={() => onSelectPhoto(item.id)}
+                    onPress={() => onSelectPhoto(selected ? null : item.id)}
                     style={[styles.photoButton, selected && styles.selected]}>
                     <PhotoImage photo={item} thumbnail contentFit="cover" style={styles.photo} />
                     {selected && (
@@ -65,7 +66,7 @@ export function ChooseDayFaceModal({
           <Pressable accessibilityRole="button" accessibilityState={{ disabled, busy: saving }}
             disabled={disabled} onPress={onChooseFace}
             style={({ pressed }) => [styles.confirm, { opacity: disabled ? 0.45 : pressed ? 0.8 : 1 }]}>
-            <Text style={styles.confirmText}>{saving ? 'Saving?' : 'Use this photo'}</Text>
+            <Text style={styles.confirmText}>{saving ? 'Saving…' : selectedPhotoId === null ? 'Remove photo' : 'Use this photo'}</Text>
           </Pressable>
         </View>
       </View>

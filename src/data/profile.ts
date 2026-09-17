@@ -50,8 +50,12 @@ export async function getDayFace(date: string): Promise<string | null> {
   return row?.photo_id ?? null;
 }
 
-export async function setDayFace(date: string, photoId: string): Promise<void> {
+export async function setDayFace(date: string, photoId: string | null): Promise<void> {
   const db = await getDb();
+  if (photoId === null) {
+    await db.runAsync('DELETE FROM day_faces WHERE date = ?', [date]);
+    return;
+  }
   await db.runAsync(
     `INSERT INTO day_faces (date, photo_id, updated_at) VALUES (?, ?, ?)
      ON CONFLICT(date) DO UPDATE SET photo_id = excluded.photo_id, updated_at = excluded.updated_at`,

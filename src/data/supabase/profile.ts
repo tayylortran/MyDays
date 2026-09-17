@@ -19,7 +19,13 @@ export async function getDayFace(date: string): Promise<string | null> {
   return data?.photo_id ?? null;
 }
 
-export async function setDayFace(date: string, photoId: string): Promise<void> {
+export async function setDayFace(date: string, photoId: string | null): Promise<void> {
+  if (photoId === null) {
+    const { error } = await supabase.from('day_faces').delete()
+      .eq('user_id', await currentUserId()).eq('date', date);
+    if (error) throw new Error(error.message);
+    return;
+  }
   const { error } = await supabase.from('day_faces').upsert({
     user_id: await currentUserId(), date, photo_id: photoId, updated_at: Date.now(),
   }, { onConflict: 'user_id,date' });

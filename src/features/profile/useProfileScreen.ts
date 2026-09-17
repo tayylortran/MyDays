@@ -15,6 +15,7 @@ export function useProfileScreen() {
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [dayPhotos, setDayPhotos] = useState<Photo[]>([]);
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
+  const [currentPhotoId, setCurrentPhotoId] = useState<string | null>(null);
   const [savingPhoto, setSavingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const picker = useRef({ request: 0, saving: false });
@@ -50,7 +51,9 @@ export function useProfileScreen() {
       ]);
       if (request !== picker.current.request || photos.length === 0) return;
       setDayPhotos(photos);
-      setSelectedPhotoId(photos.some((photo) => photo.id === currentId) ? currentId : null);
+      const availableId = photos.some((photo) => photo.id === currentId) ? currentId : null;
+      setCurrentPhotoId(availableId);
+      setSelectedPhotoId(availableId);
       setPhotoError('');
       setOpenDate(date);
     } catch {
@@ -65,14 +68,14 @@ export function useProfileScreen() {
   };
 
   const chooseFace = async () => {
-    if (!openDate || !selectedPhotoId || picker.current.saving) return;
+    if (!openDate || (selectedPhotoId === null && currentPhotoId === null) || picker.current.saving) return;
     picker.current.saving = true;
     setSavingPhoto(true);
     setPhotoError('');
     try {
       await repo.setDayFace(openDate, selectedPhotoId);
     } catch {
-      setPhotoError('Could not save this photo. Please try again.');
+      setPhotoError('Could not update this day. Please try again.');
       return;
     } finally {
       picker.current.saving = false;
@@ -80,7 +83,7 @@ export function useProfileScreen() {
     }
     setOpenDate(null);
     try { await load(); }
-    catch { Alert.alert('Photo saved', 'Could not refresh your profile. Reopen this tab to try again.'); }
+    catch { Alert.alert('Day updated', 'Could not refresh your profile. Reopen this tab to try again.'); }
   };
 
   const openSettings = () => {
@@ -149,6 +152,7 @@ export function useProfileScreen() {
     openDate,
     dayPhotos,
     selectedPhotoId,
+    currentPhotoId,
     setSelectedPhotoId,
     savingPhoto,
     photoError,

@@ -63,6 +63,13 @@ async function main() {
   await api.setDayFace('2026-09-15', 'photo');
   assert.equal(requests.at(-1).url.searchParams.get('on_conflict'), 'user_id,date');
   assert.equal(requests.at(-1).body.photo_id, 'photo');
+  replies.push({ body: null });
+  await api.setDayFace('2026-09-15', null);
+  assert.equal(requests.at(-1).method, 'DELETE');
+  assert.equal(requests.at(-1).url.searchParams.get('user_id'), 'eq.owner');
+  assert.equal(requests.at(-1).url.searchParams.get('date'), 'eq.2026-09-15');
+  replies.push({ status: 403, body: { code: '42501', message: 'Permission denied' } });
+  await assert.rejects(api.setDayFace('2026-09-15', null), /Permission denied/);
   replies.push({ body: [{ date: '2026-12-31', photos: { id: 'photo' } }] });
   assert.deepEqual(await api.facesForMonth('2026-12'), { '2026-12-31': { id: 'photo', uri: 'signed' } });
   assert.deepEqual(signed, [[{ id: 'photo' }]]);

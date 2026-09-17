@@ -79,6 +79,7 @@ export default function Profile() {
         openDate={profile.openDate}
         dayPhotos={profile.dayPhotos}
         selectedPhotoId={profile.selectedPhotoId}
+        currentPhotoId={profile.currentPhotoId}
         onSelectPhoto={profile.setSelectedPhotoId}
         saving={profile.savingPhoto}
         error={profile.photoError}
