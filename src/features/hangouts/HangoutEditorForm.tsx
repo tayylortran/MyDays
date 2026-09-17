@@ -1,7 +1,8 @@
 import { PhotoImage } from '@/src/components/PhotoImage';
 import { MAX_HANGOUT_PHOTOS, type Circle } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hangoutDate, hangoutSerif } from './hangoutStyles';
 import type { HangoutEditorController } from './useHangoutEditor';
@@ -9,6 +10,23 @@ import type { HangoutEditorController } from './useHangoutEditor';
 // The surrounding flow owns the native Modal so view/edit never stack modals.
 export function HangoutEditorForm({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
   const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+  const diaryRef = useRef<TextInput>(null);
+  const scrollOffset = useRef(0);
+  const revealDiary = useCallback(() => {
+    const keyboard = Keyboard.metrics();
+    if (!keyboard || !diaryRef.current?.isFocused()) return;
+    diaryRef.current.measureInWindow((_x, y, _width, height) => {
+      const overlap = y + height + 16 - keyboard.screenY;
+      if (overlap > 0 && diaryRef.current?.isFocused()) {
+        scrollRef.current?.scrollTo({ y: scrollOffset.current + overlap, animated: true });
+      }
+    });
+  }, []);
+  useEffect(() => {
+    const subscription = Keyboard.addListener('keyboardDidShow', revealDiary);
+    return () => subscription.remove();
+  }, [revealDiary]);
   if (controller.state.mode !== 'edit') return null;
   const { draft, original } = controller.state;
   const circle = circles.find((c) => c.id === draft.hangout.circleId);
@@ -16,7 +34,7 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
   const disabled = controller.working !== null;
 
   return (
-    <KeyboardAvoidingView style={[styles.outer, { paddingTop: insets.top + 16 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={[styles.outer, { paddingTop: insets.top + 16 }]} enabled={Platform.OS === 'android'} behavior="height">
       <View style={styles.sheet}>
         <View style={styles.handle} />
         <View style={styles.header}>
@@ -25,7 +43,9 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
             <Text style={styles.muted}>Cancel</Text>
           </Pressable>
         </View>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.content}
+          onScroll={(event) => { scrollOffset.current = event.nativeEvent.contentOffset.y; }} scrollEventThrottle={16}
+          automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <Text style={styles.label}>Circle</Text>
           <View style={styles.circles}>
             {circles.map((c) => {
@@ -66,6 +86,7 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
           <Text style={styles.label}>Diary</Text>
           <TextInput accessibilityLabel="Diary" placeholder="Anything you want to remember…" placeholderTextColor="#777"
             value={draft.hangout.note} onChangeText={(value) => controller.change('note', value)} editable={!disabled}
+            ref={diaryRef} onFocus={revealDiary} onLayout={revealDiary}
             multiline textAlignVertical="top" style={styles.diary} />
           {!!controller.error && <Text accessibilityLiveRegion="polite" style={styles.error}>{controller.error}</Text>}
         </ScrollView>
@@ -89,6 +110,7 @@ const styles = StyleSheet.create({
   date: { fontFamily: hangoutSerif, fontSize: 28, color: '#292622', flex: 1 },
   cancel: { minHeight: 44, paddingLeft: 16, justifyContent: 'center' },
   muted: { color: '#756f66', fontSize: 13 },
+  scroll: { flex: 1 },
   content: { paddingHorizontal: 24, paddingBottom: 24 },
   label: { fontSize: 10, letterSpacing: 1.5, fontWeight: '700', color: '#817a70', textTransform: 'uppercase', marginTop: 22, marginBottom: 12 },
   circles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -99,7 +121,7 @@ const styles = StyleSheet.create({
   photo: { width: '100%', height: '100%', borderRadius: 12, backgroundColor: '#eee' },
   addPhoto: { width: 72, height: 104, borderWidth: 1, borderColor: '#e5e0d9', borderRadius: 12, alignItems: 'center', justifyContent: 'center', gap: 6 },
   removePhoto: { position: 'absolute', top: 2, right: 2, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)' },
-  diary: { minHeight: 130, backgroundColor: '#f2eee7', borderRadius: 18, padding: 16, color: '#49433b', fontSize: 15, lineHeight: 23 },
+  diary: { minHeight: 130, maxHeight: 160, backgroundColor: '#f2eee7', borderRadius: 18, padding: 16, color: '#49433b', fontSize: 15, lineHeight: 23 },
   error: { color: '#a33', marginTop: 16, lineHeight: 20 },
   footer: { paddingHorizontal: 24, paddingTop: 12, backgroundColor: '#fffdfa' },
   save: { minHeight: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center', padding: 14 },
