@@ -21,6 +21,7 @@ export const supabaseRepository: Repository = {
     countLibraryPhotos: photos.countLibraryPhotos,
 
     facesForMonth: profile.facesForMonth,
+    photoDatesForMonth: profile.photoDatesForMonth,
     countProfilePhotos: profile.countProfilePhotos,
     getDayFace: profile.getDayFace,
     setDayFace: profile.setDayFace,

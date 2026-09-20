@@ -1,12 +1,14 @@
 import { PhotoImage } from '@/src/components/PhotoImage';
 import type { Photo } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 type ProfileCalendarGridProps = {
   year: number;
   month: number;
   faces: Record<string, Photo>;
+  photoDates: ReadonlySet<string>;
   onPressDay: (date: string) => void;
 };
 
@@ -14,6 +16,7 @@ export function ProfileCalendarGrid({
   year,
   month,
   faces,
+  photoDates,
   onPressDay,
 }: ProfileCalendarGridProps) {
   const dayCellAspectRatio = 0.8;
@@ -41,7 +44,15 @@ export function ProfileCalendarGrid({
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
-                  style={{ flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee' }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${date}, ${faces[date] ? 'Change cover photo' : photoDates.has(date) ? 'Choose cover photo' : 'No photos'}`}
+                  disabled={!faces[date] && !photoDates.has(date)}
+                  style={({ pressed }) => ({
+                    flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee',
+                    borderWidth: !faces[date] && photoDates.has(date) ? 1 : 0,
+                    borderColor: '#b4aa9c',
+                    opacity: pressed ? 0.7 : 1,
+                  })}
                 >
                   {faces[date] ? (
                     <PhotoImage
@@ -51,7 +62,16 @@ export function ProfileCalendarGrid({
                       contentFit="cover"
                     />
                   ) : (
-                    <Text style={{ fontSize: 11, color: '#bbb', padding: 4 }}>{Number(date.slice(8))}</Text>
+                    <>
+                      <Text style={{ fontSize: 11, color: photoDates.has(date) ? '#766d60' : '#bbb', padding: 4 }}>
+                        {Number(date.slice(8))}
+                      </Text>
+                      {photoDates.has(date) && (
+                        <View pointerEvents="none" style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+                          <Ionicons name="image-outline" size={20} color="#8a7e6d" />
+                        </View>
+                      )}
+                    </>
                   )}
                 </Pressable>
               )}

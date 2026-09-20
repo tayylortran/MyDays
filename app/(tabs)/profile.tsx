@@ -67,6 +67,7 @@ export default function Profile() {
           year={profile.year}
           month={profile.month}
           faces={profile.faces}
+          photoDates={profile.photoDates}
           onPressDay={profile.openDay}
         />
       ) : (

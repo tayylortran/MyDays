@@ -45,6 +45,26 @@ export async function facesForMonth(month: string): Promise<Record<string, Photo
   return Object.fromEntries(data.map((row, index) => [row.date, photos[index]]));
 }
 
+export async function photoDatesForMonth(month: string): Promise<string[]> {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month) || month.startsWith('0000')) throw new Error('Use a month in YYYY-MM format.');
+  const [year, number] = month.split('-').map(Number);
+  const nextMonth = number === 12 ? `${String(year + 1).padStart(4, '0')}-01` : `${String(year).padStart(4, '0')}-${String(number + 1).padStart(2, '0')}`;
+  const dates = new Set<string>();
+  let offset = 0;
+  // Read only date metadata; the indicator does not need signed photo URLs.
+  while (true) {
+    const { data, error, count } = await supabase.from('photos')
+      .select('id, hangouts!inner(date)', { count: 'exact' })
+      .gte('hangouts.date', `${month}-01`).lt('hangouts.date', `${nextMonth}-01`)
+      .order('id').range(offset, offset + 499)
+      .returns<{ id: string; hangouts: { date: string } }[]>();
+    if (error) throw error;
+    data.forEach((row) => dates.add(row.hangouts.date));
+    offset += data.length;
+    if (!data.length || (count !== null && offset >= count)) return [...dates];
+  }
+}
+
 export async function countProfilePhotos(): Promise<number> {
   const { count, error } = await supabase.from('day_faces').select('photo_id', { count: 'exact', head: true })
     .eq('user_id', await currentUserId());

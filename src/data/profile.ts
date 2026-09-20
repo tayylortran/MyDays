@@ -16,6 +16,18 @@ export async function listPhotosForDate(date: string): Promise<Photo[]> {
   return rows.map(photoFromRow);
 }
 
+// Find eligible cover dates without loading photo assets.
+export async function photoDatesForMonth(month: string): Promise<string[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ date: string }>(
+    `SELECT DISTINCT h.date FROM hangouts h
+     JOIN photos p ON p.hangout_id = h.id
+     WHERE h.date LIKE ?`,
+    [`${month}-%`]
+  );
+  return rows.map((row) => row.date);
+}
+
 // Return both sizes so profile grids and previews reuse the same photo.
 export async function facesForMonth(month: string): Promise<Record<string, Photo>> {
   const db = await getDb();
