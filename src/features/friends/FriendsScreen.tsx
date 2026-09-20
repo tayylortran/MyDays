@@ -1,46 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Temporary content for the feed layout, until friendships and posts are connected.
-const samplePosts = [
-  { id: '1', username: 'jordanleee', title: 'the whole table' },
-  { id: '2', username: 'marisol.p', title: 'pool hall' },
-  { id: '3', username: 'kev', title: 'tailgate' },
-  { id: '4', username: 'bri', title: 'ferry back' },
-  { id: '5', username: 'amara', title: 'a slow afternoon' },
-  { id: '6', username: 'anh.tran', title: 'one more coffee' },
-];
+import { AddFriendsSheet } from './AddFriendsSheet';
+import { useFriendsScreen } from './useFriendsScreen';
 
 const serif = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' });
 const mono = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
-function PhotoPlaceholder() {
-  return (
-    <View style={styles.placeholder} accessible={false} pointerEvents="none">
-      <View style={styles.stripes}>
-        {Array.from({ length: 32 }, (_, index) => <View key={index} style={styles.stripe} />)}
-      </View>
-    </View>
-  );
-}
-
 export default function FriendsScreen() {
   const insets = useSafeAreaInsets();
+  const { state, controller } = useFriendsScreen();
+  const incoming = state.lists?.incoming.length ?? 0;
+  const friendCount = state.lists?.friends.length;
   const date = new Date().toLocaleDateString('en-GB', {
     weekday: 'short', day: '2-digit', month: 'short',
   }).replace(/,/g, '');
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <FlatList
-        data={samplePosts}
-        keyExtractor={(post) => post.id}
-        numColumns={2}
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
-        columnWrapperStyle={styles.row}
-        ListHeaderComponent={
+        refreshControl={<RefreshControl refreshing={state.loading && !state.open} onRefresh={() => { void controller.refresh(); }} tintColor="#716d66" />}
+      >
           <View>
             <View style={styles.headingRow}>
               <Text accessibilityRole="header" style={styles.heading}>Friends</Text>
@@ -49,35 +31,34 @@ export default function FriendsScreen() {
                   accessibilityState={{ disabled: true }} style={styles.searchButton}>
                   <Ionicons name="search-outline" size={25} color="#514e49" />
                 </Pressable>
-                <Pressable disabled accessibilityRole="button" accessibilityLabel="Add friends, 2 pending requests"
-                  accessibilityState={{ disabled: true }} style={styles.addButton}>
+                <Pressable accessibilityRole="button" accessibilityLabel={`Add friends${incoming ? `, ${incoming} pending requests` : ''}`}
+                  onPress={controller.open} style={({ pressed }) => [styles.addButton, pressed && { opacity: 0.7 }]}>
                   <Ionicons name="add" size={30} color="#fffdfa" />
-                  <View style={styles.badge}><Text style={styles.badgeText}>2</Text></View>
+                  {incoming > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{incoming > 99 ? '99+' : incoming}</Text></View>}
                 </Pressable>
               </View>
             </View>
-            <Text style={styles.summary}>38 FRIENDS · {samplePosts.length} POSTED TODAY</Text>
+            <Text style={styles.summary}>{friendCount === undefined ? 'YOUR DAILY CIRCLE' : `${friendCount} ${friendCount === 1 ? 'FRIEND' : 'FRIENDS'}`}</Text>
+            {!!state.loadError && <View style={styles.errorBox}>
+              <Text accessibilityLiveRegion="polite" style={styles.error}>{state.loadError}</Text>
+              <Pressable accessibilityRole="button" onPress={() => { void controller.refresh(); }} style={styles.retry}>
+                <Text style={styles.retryText}>Try again</Text>
+              </Pressable>
+            </View>}
             <View style={styles.todayRow}>
               <Text accessibilityRole="header" style={styles.today}>Today</Text>
               <Text style={styles.date}>{date}</Text>
             </View>
           </View>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.author}>
-              <View style={styles.avatar} />
-              <Text numberOfLines={1} style={styles.username}>{item.username}</Text>
-            </View>
-            <View style={styles.photo} accessibilityLabel={`${item.title}, sample photo placeholder`} accessible>
-              <PhotoPlaceholder />
-              <View style={styles.caption}>
-                <Text numberOfLines={2} style={styles.title}>{item.title}</Text>
-              </View>
-            </View>
-          </View>
-        )}
-      />
+        <View style={styles.empty}>
+          <Ionicons name="people-outline" size={34} color="#aaa297" />
+          <Text style={styles.emptyText}>Your friends’ daily photos will appear here.</Text>
+          {friendCount === 0 && <Pressable accessibilityRole="button" onPress={controller.open} style={styles.emptyAction}>
+            <Text style={styles.emptyActionText}>Add friends</Text>
+          </Pressable>}
+        </View>
+      </ScrollView>
+      <AddFriendsSheet state={state} controller={controller} />
     </View>
   );
 }
@@ -96,15 +77,12 @@ const styles = StyleSheet.create({
   todayRow: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', gap: 12, marginTop: 30, marginBottom: 18 },
   today: { fontFamily: serif, fontSize: 30, color: '#242421' },
   date: { fontFamily: mono, fontSize: 10, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase', color: '#9b978f' },
-  row: { gap: 14, marginBottom: 22 },
-  card: { flex: 1, minWidth: 0 },
-  author: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 9 },
-  avatar: { width: 23, height: 23, borderRadius: 12, backgroundColor: '#dcd9d2' },
-  username: { flex: 1, fontSize: 13, color: '#383834' },
-  photo: { aspectRatio: 0.8, borderRadius: 15, overflow: 'hidden', backgroundColor: '#eae8e3' },
-  placeholder: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden' },
-  stripes: { position: 'absolute', width: 1000, height: 1000, left: -350, top: -350, flexDirection: 'row', transform: [{ rotate: '45deg' }] },
-  stripe: { width: 12, height: '100%', marginRight: 12, backgroundColor: '#e2e0da' },
-  caption: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 10, paddingTop: 9, paddingBottom: 11, backgroundColor: 'rgba(242,241,238,0.55)' },
-  title: { fontFamily: mono, fontSize: 10, lineHeight: 15, color: '#68645d' },
+  empty: { alignItems: 'center', paddingHorizontal: 24, paddingVertical: 56, gap: 16 },
+  emptyText: { color: '#8b847a', fontSize: 15, lineHeight: 23, textAlign: 'center', maxWidth: 260 },
+  emptyAction: { borderRadius: 24, paddingHorizontal: 22, minHeight: 44, justifyContent: 'center', backgroundColor: '#2d2e2b' },
+  emptyActionText: { color: '#fffdfa', fontSize: 14, fontWeight: '600' },
+  errorBox: { marginTop: 16 },
+  error: { color: '#a34736', fontSize: 13, lineHeight: 20 },
+  retry: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  retryText: { color: '#514b43', fontSize: 14, fontWeight: '600' },
 });
