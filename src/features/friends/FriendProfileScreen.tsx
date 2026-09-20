@@ -1,12 +1,11 @@
 import { getFriendProfile, type FriendProfile } from '@/src/data/supabase/friendProfiles';
-import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
 import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
-import { ProfileViewSwitcher } from '@/src/features/profile/ProfileViewSwitcher';
+import { ProfileLayout } from '@/src/features/profile/ProfileLayout';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Result = { key: string; profile: FriendProfile | null; error: string };
@@ -50,52 +49,33 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
   });
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 8, paddingBottom: insets.bottom }]}>
-      <View style={styles.toolbar}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back to friends" onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/friends')} style={styles.iconButton}>
-          <Ionicons name="chevron-back" size={23} color="#333" />
+    <ProfileLayout username={profile?.username ?? ''} photoUri={profile?.avatarUri ?? null}
+      year={month.year} month={month.month} totalPhotos={profile?.totalPhotos ?? null}
+      viewMode={viewMode} onChangeView={setViewMode} onPrev={() => moveMonth(-1)} onNext={() => moveMonth(1)}
+      bottomInset={insets.bottom} toolbar={<View style={styles.toolbar}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Back to friends" hitSlop={12} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/friends')}>
+          <Ionicons name="chevron-back" size={22} color="#333" />
         </Pressable>
-        <Text style={styles.toolbarTitle}>Friend profile</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Refresh friend profile" onPress={() => { void load(); }} style={styles.iconButton}>
-          <Ionicons name="refresh-outline" size={21} color="#333" />
+        <Pressable accessibilityRole="button" accessibilityLabel="Refresh friend profile" hitSlop={12} onPress={() => { void load(); }}>
+          <Ionicons name="refresh-outline" size={22} color="#333" />
         </Pressable>
-      </View>
-      {profile ? <>
-        <View style={styles.identity}>
-          {profile.avatarUri ? <Image source={{ uri: profile.avatarUri }} style={styles.avatar} />
-            : <View style={[styles.avatar, styles.initialAvatar]}><Text style={styles.initial}>{profile.username.slice(0, 1).toUpperCase()}</Text></View>}
-          <Text accessibilityRole="header" style={styles.username}>{profile.username}</Text>
-        </View>
-      </> : null}
-      <MonthHeader year={month.year} month={month.month} onPrev={() => moveMonth(-1)} onNext={() => moveMonth(1)}
-        subtitle={profile ? `${profile.totalPhotos} ${profile.totalPhotos === 1 ? 'photo' : 'photos'} total` : undefined} />
-      <ProfileViewSwitcher viewMode={viewMode} onChange={setViewMode} />
+      </View>}>
       {error ? <View style={styles.message}>
         <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>
         <Pressable accessibilityRole="button" onPress={() => { void load(); }} style={styles.retry}><Text style={styles.retryText}>Try again</Text></Pressable>
       </View> : !profile ? <ActivityIndicator color="#716d66" style={styles.message} /> : <>
-        {profile.covers.length === 0 && <Text style={styles.empty}>No shared photos this month.</Text>}
         {viewMode === 'calendar' ? <ProfileCalendarGrid year={month.year} month={month.month}
           faces={Object.fromEntries(profile.covers.map((cover) => [cover.date, cover]))} />
           : <View style={{ flex: 1, marginHorizontal: -8 }}><ProfilePhotoGrid key={key} photos={profile.covers} readOnly /></View>}
       </>}
-    </View>
+    </ProfileLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 8, backgroundColor: '#fcfbf9' },
-  toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  toolbarTitle: { fontSize: 14, color: '#817a70' },
-  iconButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  identity: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 8, marginBottom: 30 },
-  avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#e7e3db' },
-  initialAvatar: { alignItems: 'center', justifyContent: 'center' },
-  initial: { fontSize: 32, color: '#8d8578' },
-  username: { flex: 1, fontSize: 20, fontWeight: '600', color: '#292925' },
+  toolbar: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   message: { padding: 24, alignItems: 'center', gap: 16 },
   error: { color: '#a34736', fontSize: 14, lineHeight: 22, textAlign: 'center' },
-  empty: { color: '#918b81', fontSize: 14, textAlign: 'center', marginBottom: 16 },
   retry: { paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 22, backgroundColor: '#efede8' },
   retryText: { color: '#716d66', fontWeight: '600' },
 });

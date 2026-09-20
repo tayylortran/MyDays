@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AddFriendsSheet } from './AddFriendsSheet';
 import { YourFriendsSheet } from './YourFriendsSheet';
 import { useFriendsScreen } from './useFriendsScreen';
@@ -9,7 +9,6 @@ const serif = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Geor
 const mono = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
 export default function FriendsScreen() {
-  const insets = useSafeAreaInsets();
   const { state, controller } = useFriendsScreen();
   const incoming = state.lists?.incoming.length ?? 0;
   const friendCount = state.lists?.friends.length;
@@ -18,13 +17,8 @@ export default function FriendsScreen() {
   }).replace(/,/g, '');
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={state.loading && !state.open && !state.friendsOpen} onRefresh={() => { void controller.refresh(); }} tintColor="#716d66" />}
-      >
-          <View>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+          <View style={styles.header}>
             <View style={styles.headingRow}>
               <Text accessibilityRole="header" style={styles.heading}>Friends</Text>
               <View style={styles.actions}>
@@ -40,6 +34,12 @@ export default function FriendsScreen() {
               </View>
             </View>
             <Text style={styles.summary}>{friendCount === undefined ? 'YOUR DAILY CIRCLE' : `${friendCount} ${friendCount === 1 ? 'FRIEND' : 'FRIENDS'}`}</Text>
+          </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={state.loading && !state.open && !state.friendsOpen} onRefresh={() => { void controller.refresh(); }} tintColor="#716d66" />}
+      >
             {!!state.loadError && <View style={styles.errorBox}>
               <Text accessibilityLiveRegion="polite" style={styles.error}>{state.loadError}</Text>
               <Pressable accessibilityRole="button" onPress={() => { void controller.refresh(); }} style={styles.retry}>
@@ -50,7 +50,6 @@ export default function FriendsScreen() {
               <Text accessibilityRole="header" style={styles.today}>Today</Text>
               <Text style={styles.date}>{date}</Text>
             </View>
-          </View>
         <View style={styles.empty}>
           <Ionicons name="people-outline" size={34} color="#aaa297" />
           <Text style={styles.emptyText}>Your friends’ daily photos will appear here.</Text>
@@ -61,13 +60,14 @@ export default function FriendsScreen() {
       </ScrollView>
       <AddFriendsSheet state={state} controller={controller} />
       <YourFriendsSheet state={state} controller={controller} />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f2f1ee' },
-  content: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 28, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  content: { paddingHorizontal: 20, paddingBottom: 28, width: '100%', maxWidth: 720, alignSelf: 'center' },
   headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   heading: { fontFamily: serif, fontSize: 48, color: '#242421', flexShrink: 1 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   badge: { position: 'absolute', top: -3, right: -2, minWidth: 21, height: 21, paddingHorizontal: 4, borderRadius: 11, borderWidth: 2, borderColor: '#f2f1ee', backgroundColor: '#bd5b40', alignItems: 'center', justifyContent: 'center' },
   badgeText: { color: '#fff', fontSize: 11, fontWeight: '600' },
   summary: { fontFamily: mono, fontSize: 10, fontWeight: '600', letterSpacing: 1.5, color: '#8b8880', marginTop: 8 },
-  todayRow: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', gap: 12, marginTop: 30, marginBottom: 18 },
+  todayRow: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', gap: 12, marginTop: 8, marginBottom: 18 },
   today: { fontFamily: serif, fontSize: 30, color: '#242421' },
   date: { fontFamily: mono, fontSize: 10, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase', color: '#9b978f' },
   empty: { alignItems: 'center', paddingHorizontal: 24, paddingVertical: 56, gap: 16 },
