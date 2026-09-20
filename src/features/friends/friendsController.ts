@@ -3,6 +3,9 @@ import type { FriendListEntry, FriendSearchResult } from '@/src/data/supabase/fr
 
 type FriendsState = {
   open: boolean;
+  friendsOpen: boolean;
+  friendQuery: string;
+  removalTarget: FriendListEntry | null;
   lists: { friends: FriendListEntry[]; incoming: FriendListEntry[]; outgoing: FriendListEntry[] } | null;
   loading: boolean;
   loadError: string;
@@ -19,7 +22,8 @@ const message = (error: unknown) => error instanceof Error ? error.message : 'So
 // Keep asynchronous state separate from rendering so races and retries can be tested.
 export function createFriendsController(api = friendsApi) {
   let state: FriendsState = {
-    open: false, lists: null, loading: false, loadError: '', query: '',
+    open: false, friendsOpen: false, friendQuery: '', removalTarget: null,
+    lists: null, loading: false, loadError: '', query: '',
     searchStatus: 'idle', result: null, searchError: '', working: null, actionError: '',
   };
   let active = false;
@@ -69,7 +73,7 @@ export function createFriendsController(api = friendsApi) {
     if (active && state.open && recheckSearch && version === searchVersion && !state.loadError) await search();
   }
 
-  async function act(action: 'send' | 'accept' | 'decline' | 'cancel', id: string) {
+  async function act(action: 'send' | 'accept' | 'decline' | 'cancel' | 'remove', id: string) {
     if (!active || mutating || state.loading || state.loadError) return;
     mutating = true;
     const query = state.query;
@@ -80,6 +84,7 @@ export function createFriendsController(api = friendsApi) {
       if (action === 'send') await api.sendFriendRequest(id);
       else if (action === 'accept') await api.acceptFriendRequest(id);
       else if (action === 'decline') await api.declineFriendRequest(id);
+      else if (action === 'remove') await api.removeFriend(id);
       else await api.cancelFriendRequest(id);
     } catch (error) {
       update({ actionError: message(error) });
@@ -101,16 +106,35 @@ export function createFriendsController(api = friendsApi) {
     activate: () => { active = true; update({ working: mutating ? state.working : null }); },
     deactivate: () => { active = false; loadVersion++; searchVersion++; },
     refresh,
+    openFriends: () => {
+      if (mutating) return;
+      searchVersion++;
+      update({ open: false, friendsOpen: true, friendQuery: '', removalTarget: null, actionError: '', searchStatus: 'idle' });
+      void refresh();
+    },
+    setFriendQuery: (friendQuery: string) => { if (!mutating) update({ friendQuery }); },
+    requestRemoval: (friendshipId: string) => {
+      if (mutating || state.loading || state.loadError || !state.friendsOpen) return;
+      const person = state.lists?.friends.find((friend) => friend.friendshipId === friendshipId);
+      if (person) update({ removalTarget: person, actionError: '' });
+    },
+    cancelRemoval: () => { if (!mutating) update({ removalTarget: null }); },
+    confirmRemoval: async () => {
+      if (mutating || state.loading || state.loadError || !state.removalTarget || !state.friendsOpen) return;
+      const id = state.removalTarget.friendshipId;
+      update({ removalTarget: null });
+      await act('remove', id);
+    },
     open: () => {
       if (mutating) return;
       searchVersion++;
-      update({ open: true, query: '', result: null, searchStatus: 'idle', searchError: '', actionError: '' });
+      update({ open: true, friendsOpen: false, removalTarget: null, query: '', result: null, searchStatus: 'idle', searchError: '', actionError: '' });
       void refresh();
     },
     close: () => {
       if (mutating) return;
       searchVersion++;
-      update({ open: false, searchStatus: 'idle' });
+      update({ open: false, friendsOpen: false, removalTarget: null, searchStatus: 'idle' });
     },
     setQuery: (query: string) => {
       if (mutating) return;
@@ -123,3 +147,9 @@ export function createFriendsController(api = friendsApi) {
 }
 
 export type FriendsController = ReturnType<typeof createFriendsController>;
+
+export function visibleFriends(friends: FriendListEntry[], query: string): FriendListEntry[] {
+  const filter = query.trim().toLowerCase();
+  return friends.filter((friend) => friend.username.toLowerCase().includes(filter))
+    .sort((a, b) => a.username.toLowerCase().localeCompare(b.username.toLowerCase()) || a.userId.localeCompare(b.userId));
+}

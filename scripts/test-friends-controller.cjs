@@ -8,7 +8,7 @@ const compiled = ts.transpileModule(fs.readFileSync(path.join(__dirname, '../src
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 new Function('require', 'module', 'exports', compiled)(() => ({}), loaded, loaded.exports);
-const { createFriendsController } = loaded.exports;
+const { createFriendsController, visibleFriends } = loaded.exports;
 const deferred = () => {
   let resolve;
   const promise = new Promise((done) => { resolve = done; });
@@ -29,6 +29,7 @@ function setup(overrides = {}) {
     acceptFriendRequest: async (id) => { calls.push(['accept', id]); relationship = 'friends'; },
     declineFriendRequest: async (id) => { calls.push(['decline', id]); relationship = 'none'; },
     cancelFriendRequest: async (id) => { calls.push(['cancel', id]); relationship = 'none'; },
+    removeFriend: async (id) => { calls.push(['remove', id]); relationship = 'none'; },
     ...overrides,
   };
   const controller = createFriendsController(api);
@@ -65,6 +66,45 @@ async function main() {
   await c.act('decline', 'request');
   assert.equal(c.getSnapshot().lists.incoming.length, 0);
   assert.deepEqual(calls.map(([action]) => action), ['send', 'cancel', 'accept', 'decline']);
+
+  const removal = setup();
+  removal.setRelationship('friends');
+  removal.controller.openFriends(); await settle();
+  assert.equal(removal.controller.getSnapshot().open, false, 'Only the friends sheet opens');
+  assert.equal(removal.controller.getSnapshot().friendsOpen, true);
+  removal.controller.requestRemoval('request');
+  assert.equal(removal.controller.getSnapshot().removalTarget.username, 'Bob');
+  assert.equal(removal.calls.length, 0, 'Choosing Remove does not remove without confirmation');
+  removal.controller.cancelRemoval(); await removal.controller.confirmRemoval();
+  assert.equal(removal.calls.length, 0, 'Cancel prevents removal');
+  removal.controller.requestRemoval('not-a-friend');
+  assert.equal(removal.controller.getSnapshot().removalTarget, null);
+  removal.controller.requestRemoval('request');
+  const removing = removal.controller.confirmRemoval();
+  await removal.controller.confirmRemoval();
+  removal.controller.close();
+  assert.equal(removal.controller.getSnapshot().friendsOpen, true, 'Cannot dismiss while removing');
+  await removing;
+  assert.deepEqual(removal.calls, [['remove', 'request']], 'Duplicate confirms only remove once');
+  assert.equal(removal.controller.getSnapshot().lists.friends.length, 0, 'Removal refreshes count and list');
+  removal.controller.setFriendQuery('Bob');
+  removal.controller.close(); removal.controller.openFriends(); await settle();
+  assert.equal(removal.controller.getSnapshot().friendQuery, '', 'Reopening resets the local filter');
+  removal.controller.open(); await settle();
+  assert.equal(removal.controller.getSnapshot().friendsOpen, false, 'Opening Add closes Your friends');
+
+  const rejected = setup({ removeFriend: async () => { throw new Error('Removal rejected'); } });
+  rejected.setRelationship('friends'); rejected.controller.openFriends(); await settle();
+  rejected.controller.requestRemoval('request'); await rejected.controller.confirmRemoval();
+  assert.equal(rejected.controller.getSnapshot().lists.friends.length, 1, 'Rejected removal preserves friend');
+  assert.equal(rejected.controller.getSnapshot().actionError, 'Removal rejected');
+  assert.equal(rejected.controller.getSnapshot().working, null);
+
+  const names = ['zoe', 'Bob', 'amara'].map((username) => ({ userId: username, username }));
+  assert.deepEqual(visibleFriends(names, '').map((friend) => friend.username), ['amara', 'Bob', 'zoe']);
+  assert.deepEqual(visibleFriends(names, '  OB ').map((friend) => friend.username), ['Bob']);
+  assert.deepEqual(visibleFriends(names, 'missing'), []);
+  assert.deepEqual(names.map((friend) => friend.username), ['zoe', 'Bob', 'amara'], 'Filtering does not mutate the stored list');
 
   // Typing or closing invalidates old network responses, including late failures.
   const oldSearch = deferred();

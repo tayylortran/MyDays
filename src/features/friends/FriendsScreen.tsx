@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddFriendsSheet } from './AddFriendsSheet';
+import { YourFriendsSheet } from './YourFriendsSheet';
 import { useFriendsScreen } from './useFriendsScreen';
 
 const serif = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' });
@@ -21,14 +22,14 @@ export default function FriendsScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={state.loading && !state.open} onRefresh={() => { void controller.refresh(); }} tintColor="#716d66" />}
+        refreshControl={<RefreshControl refreshing={state.loading && !state.open && !state.friendsOpen} onRefresh={() => { void controller.refresh(); }} tintColor="#716d66" />}
       >
           <View>
             <View style={styles.headingRow}>
               <Text accessibilityRole="header" style={styles.heading}>Friends</Text>
               <View style={styles.actions}>
-                <Pressable disabled accessibilityRole="button" accessibilityLabel="Search your friends"
-                  accessibilityState={{ disabled: true }} style={styles.searchButton}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Search your friends"
+                  onPress={controller.openFriends} style={({ pressed }) => [styles.searchButton, pressed && { opacity: 0.7 }]}>
                   <Ionicons name="search-outline" size={25} color="#514e49" />
                 </Pressable>
                 <Pressable accessibilityRole="button" accessibilityLabel={`Add friends${incoming ? `, ${incoming} pending requests` : ''}`}
@@ -59,6 +60,7 @@ export default function FriendsScreen() {
         </View>
       </ScrollView>
       <AddFriendsSheet state={state} controller={controller} />
+      <YourFriendsSheet state={state} controller={controller} />
     </View>
   );
 }
