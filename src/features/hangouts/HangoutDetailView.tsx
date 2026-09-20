@@ -35,7 +35,7 @@ export function HangoutDetailView({ controller, circles, onPreview }: {
             <Text style={styles.badgeText}>{circle?.name ?? 'Circle'}</Text>
           </View>
           <Text style={styles.title}>{hangout.title}</Text>
-          <Text style={styles.meta}>{hangoutDate(hangout.date, true)} · {photos.length} {photos.length === 1 ? 'photo' : 'photos'}</Text>
+          <Text style={styles.meta}>{hangoutDate(hangout.date, true)}</Text>
           {hangout.note ? <Text style={styles.diary}>{hangout.note}</Text> : null}
           {photos.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photos}>
