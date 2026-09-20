@@ -7,16 +7,16 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 type ProfileCalendarGridProps = {
   year: number;
   month: number;
-  faces: Record<string, Photo>;
-  photoDates: ReadonlySet<string>;
-  onPressDay: (date: string) => void;
+  faces: Record<string, Pick<Photo, 'uri' | 'thumbUri' | 'cacheKey' | 'thumbCacheKey'>>;
+  photoDates?: ReadonlySet<string>;
+  onPressDay?: (date: string) => void;
 };
 
 export function ProfileCalendarGrid({
   year,
   month,
   faces,
-  photoDates,
+  photoDates = new Set(),
   onPressDay,
 }: ProfileCalendarGridProps) {
   const dayCellAspectRatio = 0.8;
@@ -43,10 +43,10 @@ export function ProfileCalendarGrid({
             <View key={di} style={{ flex: 1, aspectRatio: dayCellAspectRatio, padding: 2 }}>
               {date && (
                 <Pressable
-                  onPress={() => onPressDay(date)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${date}, ${faces[date] ? 'Change cover photo' : photoDates.has(date) ? 'Choose cover photo' : 'No photos'}`}
-                  disabled={!faces[date] && !photoDates.has(date)}
+                  onPress={() => onPressDay?.(date)}
+                  accessibilityRole={onPressDay ? 'button' : faces[date] ? 'image' : 'text'}
+                  accessibilityLabel={`${date}, ${!onPressDay ? faces[date] ? 'Cover photo' : 'No cover photo' : faces[date] ? 'Change cover photo' : photoDates.has(date) ? 'Choose cover photo' : 'No photos'}`}
+                  disabled={!onPressDay || (!faces[date] && !photoDates.has(date))}
                   style={({ pressed }) => ({
                     flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee',
                     borderWidth: !faces[date] && photoDates.has(date) ? 1 : 0,

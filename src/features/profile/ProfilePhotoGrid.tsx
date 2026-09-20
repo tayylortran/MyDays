@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 
 type ProfilePhotoGridProps = {
-  photos: LibraryPhoto[];
+  photos: Pick<LibraryPhoto, 'id' | 'date' | 'uri' | 'thumbUri' | 'cacheKey' | 'thumbCacheKey'>[];
+  readOnly?: boolean;
 };
 
-export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
-  const [selectedPhoto, setSelectedPhoto] = useState<LibraryPhoto | null>(null);
+export function ProfilePhotoGrid({ photos, readOnly = false }: ProfilePhotoGridProps) {
+  const [selectedPhoto, setSelectedPhoto] = useState<ProfilePhotoGridProps['photos'][number] | null>(null);
 
   return (
     <>
@@ -17,8 +18,9 @@ export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
           {photos.map((photo) => (
             <Pressable
               key={photo.date}
-              accessibilityLabel={`View photo from ${photo.date}`}
-              accessibilityRole="button"
+              accessibilityLabel={`${readOnly ? 'Photo' : 'View photo'} from ${photo.date}`}
+              accessibilityRole={readOnly ? 'image' : 'button'}
+              disabled={readOnly}
               onPress={() => setSelectedPhoto(photo)}
               style={{ width: '33%' }}
             >

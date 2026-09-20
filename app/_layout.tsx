@@ -30,6 +30,7 @@ function AppNavigator() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={user !== null}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="friends/[userId]" />
           </Stack.Protected>
 
           <Stack.Protected guard={user === null}>

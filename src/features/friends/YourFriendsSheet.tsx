@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
+import { useRouter } from 'expo-router';
 import {
   ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform,
   Pressable, RefreshControl, StyleSheet, Text, TextInput, View,
@@ -11,6 +12,7 @@ type Props = { controller: FriendsController; state: ReturnType<FriendsControlle
 
 export function YourFriendsSheet({ state, controller }: Props) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const busy = state.working !== null;
   const disabled = busy || state.loading || !!state.loadError;
   const friends = useMemo(() => visibleFriends(state.lists?.friends ?? [], state.friendQuery), [state.lists, state.friendQuery]);
@@ -75,8 +77,15 @@ export function YourFriendsSheet({ state, controller }: Props) {
               renderItem={({ item }) => {
                 const removing = state.working === `remove:${item.friendshipId}`;
                 return <View style={styles.person}>
-                  <View style={styles.avatar} accessible={false}><Text style={styles.initial}>{item.username.slice(0, 1).toUpperCase()}</Text></View>
-                  <Text numberOfLines={1} style={styles.username}>{item.username}</Text>
+                  <Pressable accessibilityRole="button" accessibilityLabel={`View ${item.username}'s profile`} disabled={disabled}
+                    style={styles.profileLink} onPress={() => {
+                      Keyboard.dismiss(); controller.close();
+                      router.push({ pathname: '/friends/[userId]', params: { userId: item.userId } });
+                    }}>
+                    <View style={styles.avatar} accessible={false}><Text style={styles.initial}>{item.username.slice(0, 1).toUpperCase()}</Text></View>
+                    <Text numberOfLines={1} style={styles.username}>{item.username}</Text>
+                    <Ionicons name="chevron-forward" size={15} color="#b2aba0" />
+                  </Pressable>
                   <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${item.username} from friends`}
                     accessibilityState={{ disabled, busy: removing }} disabled={disabled}
                     onPress={() => { Keyboard.dismiss(); controller.requestRemoval(item.friendshipId); }}
@@ -107,6 +116,7 @@ const styles = StyleSheet.create({
   label: { fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }), fontSize: 10, fontWeight: '600', letterSpacing: 1.5, color: '#918b81', marginTop: 18, marginBottom: 8 },
   list: { flexGrow: 1, paddingHorizontal: 20 },
   person: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 17, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e9e6e0' },
+  profileLink: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 46 },
   avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#e7e3db', alignItems: 'center', justifyContent: 'center' },
   initial: { color: '#8d8578', fontSize: 18, fontWeight: '500' },
   username: { flex: 1, fontSize: 16, fontWeight: '600', color: '#292925' },
