@@ -8,7 +8,8 @@ independently checks accepted friendship, including for direct links.
 Profiles display the friend's username, current avatar, all-time cover count,
 and selected covers for the chosen month in calendar or grid view. Month
 navigation is separate from the owner's calendar. Photo taps are disabled for
-now; the shared photo viewer and today's feed are later steps.
+now; the shared photo viewer is a later step. The Today feed uses
+`20260920000200_friends_today_feed.sql` and opens this same profile route.
 
 The profile RPC returns only identity and cover fields. Raw profiles, photos,
 hangouts and day selections retain their existing owner-only policies. The new

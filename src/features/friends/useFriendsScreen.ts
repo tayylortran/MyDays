@@ -1,5 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState, useSyncExternalStore } from 'react';
+import { AppState } from 'react-native';
 import { createFriendsController } from './friendsController';
 
 export function useFriendsScreen() {
@@ -8,7 +9,17 @@ export function useFriendsScreen() {
   useFocusEffect(useCallback(() => {
     controller.activate();
     void controller.refresh();
-    return controller.deactivate;
+    const subscription = AppState.addEventListener('change', (status) => {
+      if (status === 'active') {
+        controller.activate();
+        void controller.refresh();
+      } else controller.deactivate();
+    });
+    // Refresh new posts and the server's day boundary while this tab is visible.
+    const timer = setInterval(() => {
+      if (AppState.currentState === 'active' && !controller.getSnapshot().working) void controller.refresh();
+    }, 60_000);
+    return () => { clearInterval(timer); subscription.remove(); controller.deactivate(); };
   }, [controller]));
   return { state, controller };
 }

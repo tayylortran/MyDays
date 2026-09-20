@@ -1,5 +1,6 @@
 import * as friendsApi from '@/src/data/supabase/friends';
 import type { FriendListEntry, FriendSearchResult } from '@/src/data/supabase/friends';
+import { getFriendsToday, type FriendsToday } from '@/src/data/supabase/friendsFeed';
 
 type FriendsState = {
   open: boolean;
@@ -9,6 +10,9 @@ type FriendsState = {
   lists: { friends: FriendListEntry[]; incoming: FriendListEntry[]; outgoing: FriendListEntry[] } | null;
   loading: boolean;
   loadError: string;
+  feed: FriendsToday | null;
+  feedLoading: boolean;
+  feedError: string;
   query: string;
   searchStatus: 'idle' | 'loading' | 'done' | 'error';
   result: FriendSearchResult | null;
@@ -20,15 +24,17 @@ type FriendsState = {
 const message = (error: unknown) => error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 
 // Keep asynchronous state separate from rendering so races and retries can be tested.
-export function createFriendsController(api = friendsApi) {
+export function createFriendsController(api = friendsApi, loadFeed = getFriendsToday) {
   let state: FriendsState = {
     open: false, friendsOpen: false, friendQuery: '', removalTarget: null,
     lists: null, loading: false, loadError: '', query: '',
+    feed: null, feedLoading: false, feedError: '',
     searchStatus: 'idle', result: null, searchError: '', working: null, actionError: '',
   };
   let active = false;
   let loadVersion = 0;
   let searchVersion = 0;
+  let feedVersion = 0;
   let mutating = false;
   const listeners = new Set<() => void>();
   const update = (patch: Partial<FriendsState>) => {
@@ -66,10 +72,24 @@ export function createFriendsController(api = friendsApi) {
     }
   }
 
+  async function refreshFeed() {
+    if (!active) return;
+    const version = ++feedVersion;
+    update({ feedLoading: true, feedError: '' });
+    try {
+      const feed = await loadFeed();
+      if (version === feedVersion) update({ feed });
+    } catch (error) {
+      if (version === feedVersion) update({ feed: null, feedError: message(error) });
+    } finally {
+      if (version === feedVersion) update({ feedLoading: false });
+    }
+  }
+
   async function refresh() {
     const version = searchVersion;
     const recheckSearch = state.searchStatus === 'done';
-    await refreshLists();
+    await Promise.all([refreshLists(), refreshFeed()]);
     if (active && state.open && recheckSearch && version === searchVersion && !state.loadError) await search();
   }
 
@@ -90,7 +110,7 @@ export function createFriendsController(api = friendsApi) {
       update({ actionError: message(error) });
     } finally {
       // Reconcile even on failure: a lost response may follow a committed change.
-      await refreshLists();
+      await Promise.all([refreshLists(), refreshFeed()]);
       if (active && recheckSearch && state.query === query && state.open) await search();
       mutating = false;
       update({ working: null });
@@ -104,13 +124,13 @@ export function createFriendsController(api = friendsApi) {
       return () => { listeners.delete(listener); };
     },
     activate: () => { active = true; update({ working: mutating ? state.working : null }); },
-    deactivate: () => { active = false; loadVersion++; searchVersion++; },
+    deactivate: () => { active = false; loadVersion++; searchVersion++; feedVersion++; },
     refresh,
     openFriends: () => {
       if (mutating) return;
       searchVersion++;
       update({ open: false, friendsOpen: true, friendQuery: '', removalTarget: null, actionError: '', searchStatus: 'idle' });
-      void refresh();
+      void refreshLists();
     },
     setFriendQuery: (friendQuery: string) => { if (!mutating) update({ friendQuery }); },
     requestRemoval: (friendshipId: string) => {
@@ -129,7 +149,7 @@ export function createFriendsController(api = friendsApi) {
       if (mutating) return;
       searchVersion++;
       update({ open: true, friendsOpen: false, removalTarget: null, query: '', result: null, searchStatus: 'idle', searchError: '', actionError: '' });
-      void refresh();
+      void refreshLists();
     },
     close: () => {
       if (mutating) return;

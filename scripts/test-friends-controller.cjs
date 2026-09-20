@@ -16,7 +16,7 @@ const deferred = () => {
 };
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
-function setup(overrides = {}) {
+function setup(overrides = {}, loadFeed = async () => ({ date: '2026-09-20', friendCount: 0, posts: [], quietFriends: [] })) {
   let relationship = 'none';
   const person = { friendshipId: 'request', userId: 'bob', username: 'Bob', createdAt: 'now', acceptedAt: null };
   const calls = [];
@@ -32,7 +32,7 @@ function setup(overrides = {}) {
     removeFriend: async (id) => { calls.push(['remove', id]); relationship = 'none'; },
     ...overrides,
   };
-  const controller = createFriendsController(api);
+  const controller = createFriendsController(api, loadFeed);
   controller.activate();
   return { controller, api, calls, setRelationship: (value) => { relationship = value; } };
 }
@@ -167,6 +167,22 @@ async function main() {
   const pending = unmounted.refresh(); unmounted.deactivate();
   const before = unmounted.getSnapshot(); late.resolve([]); await pending;
   assert.equal(unmounted.getSnapshot(), before, 'No updates after leaving the screen');
+  const oldFeed = deferred();
+  const nextFeed = { date: '2026-09-21', friendCount: 1, posts: [], quietFriends: [] };
+  let feedCalls = 0;
+  const feedRace = setup({}, () => ++feedCalls === 1 ? oldFeed.promise : Promise.resolve(nextFeed)).controller;
+  const oldRefresh = feedRace.refresh(); await feedRace.refresh();
+  oldFeed.resolve({ ...nextFeed, date: '2026-09-20' }); await oldRefresh;
+  assert.equal(feedRace.getSnapshot().feed.date, '2026-09-21', 'Old refresh cannot restore yesterday feed');
+  const brokenFeed = setup({}, async () => { throw new Error('Feed unavailable'); }).controller;
+  await brokenFeed.refresh();
+  assert.equal(brokenFeed.getSnapshot().feedError, 'Feed unavailable');
+  assert.equal(brokenFeed.getSnapshot().loadError, '', 'Feed errors do not block friend management');
+  assert.ok(brokenFeed.getSnapshot().lists);
+  const feedRemoval = setup({}, async () => ({ ...nextFeed, friendCount: 1, posts: [], quietFriends: [] }));
+  feedRemoval.setRelationship('friends'); feedRemoval.controller.openFriends(); await settle();
+  feedRemoval.controller.requestRemoval('request'); await feedRemoval.controller.confirmRemoval();
+  assert.ok(feedRemoval.controller.getSnapshot().feed, 'Friend mutations also reload the feed');
   console.log('PASS: request lifecycle, stale searches, double taps, uncertain saves, refresh recovery, and screen cleanup.');
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
