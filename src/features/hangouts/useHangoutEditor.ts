@@ -3,7 +3,7 @@ import { MAX_HANGOUT_PHOTOS, type Circle, type Hangout, type Photo, type SavedHa
 import { newId } from '@/src/lib/id';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Keyboard } from 'react-native';
+import { Alert, Keyboard, Platform } from 'react-native';
 
 export type DraftPhoto = Pick<Photo, 'id' | 'uri' | 'thumbUri' | 'cacheKey' | 'thumbCacheKey'> & { kind: 'existing' | 'new' };
 export type HangoutDraft = { hangout: Hangout; photos: DraftPhoto[] };
@@ -95,7 +95,7 @@ export function useHangoutEditor(
     } : current);
   }
 
-  async function pickPhotos() {
+  async function pickPhotos(source: 'library' | 'camera' = 'library') {
     if (state.mode !== 'edit' || busy.current) return;
     const remaining = MAX_HANGOUT_PHOTOS - state.draft.photos.length;
     if (remaining <= 0) return;
@@ -103,10 +103,21 @@ export function useHangoutEditor(
     busy.current = true;
     setWorking('pick');
     setError('');
+    Keyboard.dismiss();
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) throw new Error('Allow photo access in Settings to add pictures.');
-      const result = await ImagePicker.launchImageLibraryAsync({
+      // Web must launch directly from a user gesture; native camera needs permission.
+      if (Platform.OS !== 'web') {
+        const permission = source === 'camera'
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) throw new Error(source === 'camera'
+          ? 'Camera access is off. Allow camera access for MyDays in your device Settings, or choose a photo from your library.'
+          : 'Allow photo access in Settings to add pictures.');
+      }
+      if (!mounted.current || request !== generation.current) return;
+      const result = source === 'camera'
+        ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 1 })
+        : await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: remaining,
         orderedSelection: true, quality: 1,
       });
@@ -118,7 +129,8 @@ export function useHangoutEditor(
         ...current, draft: { ...current.draft, photos: [...current.draft.photos, ...additions] },
       } : current);
     } catch (e) {
-      if (mounted.current) setError(e instanceof Error ? e.message : 'Could not open your photos.');
+      if (mounted.current && request === generation.current) setError(e instanceof Error ? e.message
+        : source === 'camera' ? 'Could not open the camera. Try again or choose a photo from your library.' : 'Could not open your photos.');
     } finally {
       busy.current = false;
       if (mounted.current) setWorking(null);

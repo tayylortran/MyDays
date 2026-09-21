@@ -1,7 +1,7 @@
 import { PhotoImage } from '@/src/components/PhotoImage';
 import { MAX_HANGOUT_PHOTOS, type Circle } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hangoutDate, hangoutSerif } from './hangoutStyles';
@@ -10,6 +10,9 @@ import type { HangoutEditorController } from './useHangoutEditor';
 // The surrounding flow owns the native Modal so view/edit never stack modals.
 export function HangoutEditorForm({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
   const insets = useSafeAreaInsets();
+  const [photoMenu, setPhotoMenu] = useState<{ left: number; top: number; width: number } | null>(null);
+  const sheetRef = useRef<View>(null);
+  const addPhotoRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
   const diaryRef = useRef<TextInput>(null);
   const scrollOffset = useRef(0);
@@ -33,9 +36,26 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
   const color = circle?.color ?? '#333';
   const disabled = controller.working !== null;
 
+  function choosePhotoSource() {
+    if (disabled) return;
+    if (photoMenu) { setPhotoMenu(null); return; }
+    Keyboard.dismiss();
+    sheetRef.current?.measureInWindow((sheetX, sheetY, sheetWidth, sheetHeight) => {
+      addPhotoRef.current?.measureInWindow((x, y, _width, height) => {
+        const width = Math.min(260, sheetWidth - 24);
+        const below = y - sheetY + height + 6;
+        setPhotoMenu({
+          width,
+          left: Math.max(12, Math.min(x - sheetX, sheetWidth - width - 12)),
+          top: Math.max(12, below + 112 <= sheetHeight - 12 ? below : y - sheetY - 118),
+        });
+      });
+    });
+  }
+
   return (
     <KeyboardAvoidingView style={[styles.outer, { paddingTop: insets.top + 16 }]} enabled={Platform.OS === 'android'} behavior="height">
-      <View style={styles.sheet}>
+      <View ref={sheetRef} collapsable={false} style={styles.sheet} onLayout={() => setPhotoMenu(null)}>
         <View style={styles.handle} />
         <View style={styles.header}>
           <Text style={styles.date}>{hangoutDate(draft.hangout.date)}</Text>
@@ -67,8 +87,9 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
           <Text style={styles.label}>Photos · {draft.photos.length}/{MAX_HANGOUT_PHOTOS}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoStrip} keyboardShouldPersistTaps="handled">
             {draft.photos.length < MAX_HANGOUT_PHOTOS && (
-              <Pressable accessibilityRole="button" accessibilityLabel="Add photos" disabled={disabled}
-                onPress={controller.pickPhotos} style={styles.addPhoto}>
+              <Pressable ref={addPhotoRef} collapsable={false} accessibilityRole="button" accessibilityLabel="Add photos" disabled={disabled}
+                accessibilityState={{ expanded: photoMenu !== null, disabled }}
+                onPress={choosePhotoSource} style={styles.addPhoto}>
                 <Ionicons name="add" size={24} color="#756f66" />
                 <Text style={styles.muted}>{controller.working === 'pick' ? 'Opening…' : 'Add'}</Text>
               </Pressable>
@@ -97,6 +118,22 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
             <Text style={styles.saveText}>{controller.working === 'save' ? 'Saving…' : original ? 'Save changes' : `Save${circle ? ` to ${circle.name}` : ''}`}</Text>
           </Pressable>
         </View>
+        {photoMenu && !disabled && (
+          <View style={StyleSheet.absoluteFill} accessibilityViewIsModal onAccessibilityEscape={() => setPhotoMenu(null)}>
+            <Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel="Dismiss photo menu"
+              onPress={() => setPhotoMenu(null)} />
+            <View style={[styles.photoMenu, photoMenu]}>
+              {(['camera', 'library'] as const).map((source) => (
+                <Pressable key={source} accessibilityRole="button"
+                  onPress={() => { setPhotoMenu(null); void controller.pickPhotos(source); }}
+                  style={({ pressed }) => [styles.photoSource, source === 'library' && styles.photoSourceDivider, pressed && styles.photoSourcePressed]}>
+                  <Ionicons name={source === 'camera' ? 'camera-outline' : 'images-outline'} size={20} color="#49433b" />
+                  <Text style={styles.photoSourceText}>{source === 'camera' ? 'Take photo' : 'Choose from camera roll'}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -117,6 +154,11 @@ const styles = StyleSheet.create({
   circle: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1.5 },
   title: { fontFamily: hangoutSerif, color: '#292622', fontSize: 25, paddingTop: 6, paddingBottom: 14, borderBottomWidth: 2 },
   photoStrip: { gap: 10, paddingTop: 6, paddingBottom: 2 },
+  photoMenu: { position: 'absolute', borderRadius: 14, backgroundColor: '#fffdfa', borderWidth: 1, borderColor: '#e5e0d9', paddingVertical: 4, shadowColor: '#292622', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 12, elevation: 8 },
+  photoSource: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 50, paddingHorizontal: 14, paddingVertical: 12 },
+  photoSourceDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e5e0d9' },
+  photoSourcePressed: { backgroundColor: '#f2eee7' },
+  photoSourceText: { flexShrink: 1, color: '#49433b', fontSize: 14 },
   photoItem: { width: 82, height: 104 },
   photo: { width: '100%', height: '100%', borderRadius: 12, backgroundColor: '#eee' },
   addPhoto: { width: 72, height: 104, borderWidth: 1, borderColor: '#e5e0d9', borderRadius: 12, alignItems: 'center', justifyContent: 'center', gap: 6 },
