@@ -1,8 +1,5 @@
 import { supabase } from '@/src/lib/supabase';
-import type { Photo } from '../types';
-
-export type SharedCover = Pick<Photo, 'id' | 'uri' | 'thumbUri' | 'cacheKey' | 'thumbCacheKey'> & { date: string };
-export type FriendProfile = { userId: string; username: string; avatarUri: string | null; totalPhotos: number; covers: SharedCover[] };
+import type { FriendProfile } from '../friendTypes';
 type ProfileRow = {
   user_id: string; username: string; avatar_storage_path: string | null; total_photos: number;
   covers: { id: string; date: string; storage_path: string; thumb_storage_path: string | null }[];

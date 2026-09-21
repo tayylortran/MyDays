@@ -1,5 +1,5 @@
 import { PhotoImage } from '@/src/components/PhotoImage';
-import { QUIET_FRIEND_PREVIEW_LIMIT, type FeedPerson, type TodayPost } from '@/src/data/supabase/friendsFeed';
+import { QUIET_FRIEND_PREVIEW_LIMIT, type FeedPerson, type TodayPost } from '@/src/data/friendTypes';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';

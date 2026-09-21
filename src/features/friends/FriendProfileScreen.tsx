@@ -1,4 +1,5 @@
-import { getFriendProfile, type FriendProfile } from '@/src/data/supabase/friendProfiles';
+import type { FriendProfile } from '@/src/data/friendTypes';
+import { useRepo } from '@/src/data/RepositoryProvider';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
 import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
 import { ProfileLayout } from '@/src/features/profile/ProfileLayout';
@@ -11,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type Result = { key: string; profile: FriendProfile | null; error: string };
 
 export function FriendProfileScreen({ userId }: { userId: string }) {
+  const repo = useRepo();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [month, setMonth] = useState(() => ({ year: new Date().getFullYear(), month: new Date().getMonth() }));
@@ -26,12 +28,12 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
     const version = ++request.current;
     setResult(null);
     try {
-      const next = await getFriendProfile(userId, monthKey);
+      const next = await repo.getFriendProfile(userId, monthKey);
       if (version === request.current) setResult({ key, profile: next, error: '' });
     } catch (error) {
       if (version === request.current) setResult({ key, profile: null, error: error instanceof Error ? error.message : 'Could not load this profile. Please try again.' });
     }
-  }, [userId, monthKey, key]);
+  }, [repo, userId, monthKey, key]);
 
   useFocusEffect(useCallback(() => {
     void load();

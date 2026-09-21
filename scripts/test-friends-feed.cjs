@@ -19,7 +19,14 @@ const loaded = { exports: {} };
 const compiled = ts.transpileModule(fs.readFileSync(path.join(__dirname, '../src/data/supabase/friendsFeed.ts'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
-new Function('require', 'module', 'exports', compiled)((name) => { assert.equal(name, '@/src/lib/supabase'); return { supabase }; }, loaded, loaded.exports);
+const shared = { exports: {} };
+new Function('exports', ts.transpileModule(fs.readFileSync(path.join(__dirname, '../src/data/friendTypes.ts'), 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText)(shared.exports);
+new Function('require', 'module', 'exports', compiled)((name) => {
+  if (name === '../friendTypes') return shared.exports;
+  assert.equal(name, '@/src/lib/supabase'); return { supabase };
+}, loaded, loaded.exports);
 const api = loaded.exports;
 const quiet = (id) => ({ user_id: `user-${id}`, username: `person${id}`, avatar_storage_path: `avatar-${id}`, cover: null });
 const poster = (id, updated) => ({ ...quiet(id), cover: { id: `cover-${id}`, date: '2026-09-20', title: `Title ${id}`, storage_path: `main-${id}`, thumb_storage_path: `thumb-${id}`, updated_at: updated } });

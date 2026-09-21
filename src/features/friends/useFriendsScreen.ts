@@ -1,10 +1,12 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useRepo } from '@/src/data/RepositoryProvider';
 import { AppState } from 'react-native';
 import { createFriendsController } from './friendsController';
 
 export function useFriendsScreen() {
-  const [controller] = useState(createFriendsController);
+  const repo = useRepo();
+  const controller = useMemo(() => createFriendsController(repo), [repo]);
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   useFocusEffect(useCallback(() => {
     controller.activate();

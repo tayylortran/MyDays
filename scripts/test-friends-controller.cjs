@@ -7,7 +7,7 @@ const loaded = { exports: {} };
 const compiled = ts.transpileModule(fs.readFileSync(path.join(__dirname, '../src/features/friends/friendsController.ts'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
-new Function('require', 'module', 'exports', compiled)(() => ({}), loaded, loaded.exports);
+new Function('require', 'module', 'exports', compiled)((name) => { throw new Error(`Controller must use its injected repository, not import ${name}`); }, loaded, loaded.exports);
 const { createFriendsController, visibleFriends } = loaded.exports;
 const deferred = () => {
   let resolve;
@@ -30,9 +30,10 @@ function setup(overrides = {}, loadFeed = async () => ({ date: '2026-09-20', fri
     declineFriendRequest: async (id) => { calls.push(['decline', id]); relationship = 'none'; },
     cancelFriendRequest: async (id) => { calls.push(['cancel', id]); relationship = 'none'; },
     removeFriend: async (id) => { calls.push(['remove', id]); relationship = 'none'; },
+    getFriendsToday: loadFeed,
     ...overrides,
   };
-  const controller = createFriendsController(api, loadFeed);
+  const controller = createFriendsController(api);
   controller.activate();
   return { controller, api, calls, setRelationship: (value) => { relationship = value; } };
 }

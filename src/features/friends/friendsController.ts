@@ -1,6 +1,5 @@
-import * as friendsApi from '@/src/data/supabase/friends';
-import type { FriendListEntry, FriendSearchResult } from '@/src/data/supabase/friends';
-import { getFriendsToday, type FriendsToday } from '@/src/data/supabase/friendsFeed';
+import type { FriendsRepository } from '@/src/data/repository';
+import type { FriendListEntry, FriendSearchResult, FriendsToday } from '@/src/data/friendTypes';
 
 type FriendsState = {
   open: boolean;
@@ -24,7 +23,7 @@ type FriendsState = {
 const message = (error: unknown) => error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 
 // Keep asynchronous state separate from rendering so races and retries can be tested.
-export function createFriendsController(api = friendsApi, loadFeed = getFriendsToday) {
+export function createFriendsController(api: Omit<FriendsRepository, 'getFriendProfile'>) {
   let state: FriendsState = {
     open: false, friendsOpen: false, friendQuery: '', removalTarget: null,
     lists: null, loading: false, loadError: '', query: '',
@@ -77,7 +76,7 @@ export function createFriendsController(api = friendsApi, loadFeed = getFriendsT
     const version = ++feedVersion;
     update({ feedLoading: true, feedError: '' });
     try {
-      const feed = await loadFeed();
+      const feed = await api.getFriendsToday();
       if (version === feedVersion) update({ feed });
     } catch (error) {
       if (version === feedVersion) update({ feed: null, feedError: message(error) });

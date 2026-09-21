@@ -1,19 +1,6 @@
 import { supabase } from '@/src/lib/supabase';
 
-export type FriendSearchResult = {
-  userId: string;
-  username: string;
-  friendshipId: string | null;
-  relationship: 'none' | 'incoming' | 'outgoing' | 'friends';
-};
-
-export type FriendListEntry = {
-  friendshipId: string;
-  userId: string;
-  username: string;
-  createdAt: string;
-  acceptedAt: string | null;
-};
+import type { FriendListEntry, FriendSearchResult } from '../friendTypes';
 
 type FriendRow = {
   friendship_id: string;

@@ -4,7 +4,23 @@ import {
   Photo, ProfileSettings, SaveHangoutInput, SavedHangout
 } from './types';
 
-export interface Repository {
+import type { FriendListEntry, FriendProfile, FriendSearchResult, FriendsToday } from './friendTypes';
+
+export interface FriendsRepository {
+  searchFriendUsername(username: string): Promise<FriendSearchResult | null>;
+  listFriends(): Promise<FriendListEntry[]>;
+  listIncomingFriendRequests(): Promise<FriendListEntry[]>;
+  listOutgoingFriendRequests(): Promise<FriendListEntry[]>;
+  sendFriendRequest(recipientId: string): Promise<string>;
+  acceptFriendRequest(friendshipId: string): Promise<void>;
+  declineFriendRequest(friendshipId: string): Promise<void>;
+  cancelFriendRequest(friendshipId: string): Promise<void>;
+  removeFriend(friendshipId: string): Promise<void>;
+  getFriendsToday(timeZone?: string): Promise<FriendsToday>;
+  getFriendProfile(userId: string, month: string): Promise<FriendProfile>;
+}
+
+export interface Repository extends FriendsRepository {
   listCircles(): Promise<Circle[]>;
   saveCircle(c: Circle): Promise<void>;
   countHangoutsForCircle(circleId: string): Promise<number>;

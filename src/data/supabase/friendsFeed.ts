@@ -1,10 +1,5 @@
 import { supabase } from '@/src/lib/supabase';
-import type { SharedCover } from './friendProfiles';
-
-export const QUIET_FRIEND_PREVIEW_LIMIT = 9;
-export type FeedPerson = { userId: string; username: string; avatarUri: string | null };
-export type TodayPost = FeedPerson & { title: string; photo: SharedCover; updatedAt: number };
-export type FriendsToday = { date: string; friendCount: number; posts: TodayPost[]; quietFriends: FeedPerson[] };
+import { QUIET_FRIEND_PREVIEW_LIMIT, type FeedPerson, type TodayPost, type FriendsToday } from '../friendTypes';
 type FriendRow = {
   user_id: string; username: string; avatar_storage_path: string | null;
   cover: { id: string; date: string; title: string; storage_path: string; thumb_storage_path: string | null; updated_at: number } | null;

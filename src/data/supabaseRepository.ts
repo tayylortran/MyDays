@@ -4,8 +4,22 @@ import * as hangouts from './supabase/hangouts';
 import * as photos from './supabase/photos';
 import * as profile from './supabase/profile';
 import * as saveHangout from './supabase/saveHangout';
+import * as friends from './supabase/friends';
+import { getFriendsToday } from './supabase/friendsFeed';
+import { getFriendProfile } from './supabase/friendProfiles';
 
 export const supabaseRepository: Repository = {
+    searchFriendUsername: friends.searchFriendUsername,
+    listFriends: friends.listFriends,
+    listIncomingFriendRequests: friends.listIncomingFriendRequests,
+    listOutgoingFriendRequests: friends.listOutgoingFriendRequests,
+    sendFriendRequest: friends.sendFriendRequest,
+    acceptFriendRequest: friends.acceptFriendRequest,
+    declineFriendRequest: friends.declineFriendRequest,
+    cancelFriendRequest: friends.cancelFriendRequest,
+    removeFriend: friends.removeFriend,
+    getFriendsToday,
+    getFriendProfile,
     listCircles: circles.listCircles,
     saveCircle: circles.saveCircle,
     countHangoutsForCircle: circles.countHangoutsForCircle,
