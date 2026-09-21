@@ -16,6 +16,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
+  const [username, setUsername] = useState('');
 
   async function handleSubmit(action: 'signIn' | 'signUp') {
   if (loading) return;
@@ -32,7 +34,7 @@ export default function LoginScreen() {
     const result =
       action === 'signIn'
         ? await signIn(email.trim(), password)
-        : await signUp(email.trim(), password);
+        : await signUp(email.trim(), password, username);
 
     if (!result.ok) {
       setMessage(result.message);
@@ -67,7 +69,26 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.title}>Welcome to MyDays</Text>
-        <Text>Sign in or create an account.</Text>
+        <Text>{mode === 'signUp' ? 'Create your account.' : 'Sign in to your account.'}</Text>
+
+        {mode === 'signUp' && (
+          <>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              accessibilityLabel="Username"
+              placeholder="Choose a username"
+              placeholderTextColor="#777"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={30}
+              editable={!loading}
+            />
+            <Text>3–30 letters, numbers, underscores, or periods. You can change it in Settings.</Text>
+          </>
+        )}
 
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -98,15 +119,18 @@ export default function LoginScreen() {
         />
 
         <Button
-          title="Sign in"
+          title={mode === 'signIn' ? 'Sign in' : 'Create account'}
           disabled={loading}
-          onPress={() => handleSubmit('signIn')}
+          onPress={() => handleSubmit(mode)}
         />
 
         <Button
-          title="Create account"
+          title={mode === 'signIn' ? 'Create an account' : 'Already have an account? Sign in'}
           disabled={loading}
-          onPress={() => handleSubmit('signUp')}
+          onPress={() => {
+            setMode(mode === 'signIn' ? 'signUp' : 'signIn');
+            setMessage('');
+          }}
         />
 
         <Text accessibilityLiveRegion="polite">{message}</Text>

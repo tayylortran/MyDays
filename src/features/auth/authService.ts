@@ -8,14 +8,36 @@ type AuthResult =
 
 export async function signUp(
   email: string,
-  password: string
+  password: string,
+  username: string
 ): Promise<AuthResult> {
+  const trimmedUsername = username.trim();
+  if (!/^[A-Za-z0-9_.]{3,30}$/.test(trimmedUsername)) {
+    return { ok: false, message: 'Use 3 to 30 letters, numbers, underscores, or periods for your username.' };
+  }
+  const { data: available, error: availabilityError } = await supabase.rpc(
+    'is_username_available', { candidate: trimmedUsername }
+  );
+  if (availabilityError) {
+    return { ok: false, message: 'Unable to check that username. Please try again.' };
+  }
+  if (!available) {
+    return { ok: false, message: 'That username is already taken. Choose another.' };
+  }
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: { data: { username: trimmedUsername } },
   });
 
   if (error) {
+    // Another signup can reserve the name after our availability check.
+    if (error.code === 'unexpected_failure') {
+      const check = await supabase.rpc('is_username_available', { candidate: trimmedUsername });
+      if (!check.error && check.data === false) {
+        return { ok: false, message: 'That username is already taken. Choose another.' };
+      }
+    }
     return { ok: false, message: error.message };
   }
 

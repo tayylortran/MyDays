@@ -62,7 +62,11 @@ export function ProfileSettingsModal({
             </View>
 
             <TextInput
-              placeholder="Your name"
+              placeholder="Username"
+              accessibilityLabel="Username"
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={30}
               value={username}
               onChangeText={onChangeUsername}
               style={{
@@ -74,6 +78,10 @@ export function ProfileSettingsModal({
                 fontSize: 15,
               }}
             />
+
+            <Text style={{ color: '#666', fontSize: 12 }}>
+              You can change your username twice in any 14-day period.
+            </Text>
 
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
