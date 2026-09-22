@@ -1,4 +1,7 @@
 import { PhotoImage } from '@/src/components/PhotoImage';
+import { useMemo } from 'react';
+import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
+import type { SharedValue } from 'react-native-reanimated';
 import {
     ActivityIndicator,
     FlatList,
@@ -12,8 +15,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePicturesScreen } from './usePicturesScreen';
 
-export default function PicturesScreen() {
+export default function PicturesScreen({ closeGesture, scrollY }: { closeGesture: PanGesture; scrollY: SharedValue<number> }) {
   const pictures = usePicturesScreen();
+  const scrollGesture = useMemo(() => Gesture.Native().requireExternalGestureToFail(closeGesture), [closeGesture]);
 
   const filters = [
     { id: undefined, name: 'All', color: undefined },
@@ -25,9 +29,13 @@ export default function PicturesScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.screen} edges={['bottom', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.title}>Pictures</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Refresh pictures" disabled={pictures.loading}
+          onPress={() => void pictures.refresh()} style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}>
+          <Text style={{ color: pictures.loading ? '#aaa' : '#756f66' }}>{pictures.loading ? 'Loading…' : 'Refresh'}</Text>
+        </Pressable>
         <Text style={styles.subtitle} accessibilityLiveRegion="polite">
           {pictures.totalPhotos === null
             ? pictures.loading ? 'Loading photos…' : 'Photos unavailable'
@@ -50,7 +58,12 @@ export default function PicturesScreen() {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 hitSlop={{ top: 6, bottom: 6 }}
-                onPress={() => pictures.selectCircle(filter.id)}
+                onPress={() => {
+                  if (filter.id !== pictures.circleId) {
+                    scrollY.set(0);
+                    pictures.selectCircle(filter.id);
+                  }
+                }}
                 style={[
                   styles.filter,
                   selected && styles.selectedFilter,
@@ -73,15 +86,19 @@ export default function PicturesScreen() {
         </ScrollView>
       </View>
 
+      <GestureDetector gesture={closeGesture}>
+      <GestureDetector gesture={scrollGesture}>
       <FlatList
+        bounces={false}
+        overScrollMode="never"
+        scrollEventThrottle={16}
+        onScroll={({ nativeEvent }) => { scrollY.set(Math.max(0, nativeEvent.contentOffset.y)); }}
         key={pictures.circleId ?? 'all'}
         style={styles.list}
         data={pictures.photos}
         keyExtractor={(photo) => photo.id}
         numColumns={3}
         contentContainerStyle={styles.grid}
-        refreshing={pictures.loading && pictures.photos.length === 0}
-        onRefresh={() => void pictures.refresh()}
         renderItem={({ item }) => (
           <View style={styles.cell}>
             <PhotoImage
@@ -136,6 +153,8 @@ export default function PicturesScreen() {
           </View>
         }
       />
+      </GestureDetector>
+      </GestureDetector>
     </SafeAreaView>
   );
 }

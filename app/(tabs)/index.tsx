@@ -4,9 +4,14 @@ import { HangoutFlowModal } from '@/src/features/hangouts/HangoutFlowModal';
 import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
 import { Pressable, Text, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
+import { useCalendarPicturesGesture } from '@/src/features/pictures/PicturesPanel';
 
 export default function Home() {
   const calendar = useCalendarScreen(); //calls the brain and stores everything it hands back as a variable called calendar. 
+  const pictures = useCalendarPicturesGesture(
+    calendar.hangoutEditor.state.mode === 'closed' && !calendar.editingCircle && !calendar.creatingCircle,
+  );
   //it holds all the actions and data for this screen. 
 
 
@@ -16,6 +21,8 @@ export default function Home() {
     .reduce((total, [, hangouts]) => total + hangouts.length, 0);
 
   return (
+    <View style={{ flex: 1 }}>
+    <GestureDetector gesture={pictures.gesture}>
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 8 }}>
       <MonthHeader //component
         month={calendar.month} //"passing props".
@@ -61,6 +68,8 @@ export default function Home() {
       </View>
 
       <CalendarGrid //component
+        openingGesture={pictures.gesture}
+        atBottom={pictures.calendarAtBottom}
         year={calendar.year}
         month={calendar.month}
         byDate={calendar.byDate}
@@ -68,6 +77,16 @@ export default function Home() {
         onPressDay={calendar.openAdd}
         onPressHangout={calendar.openDetail}
       />
+    </View>
+    </GestureDetector>
+    <GestureDetector gesture={pictures.handleGesture}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Open pictures"
+        onPress={pictures.open} disabled={!pictures.open}
+        style={{ minHeight: 44, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#c8c2b9' }} />
+        <Text style={{ fontSize: 12, color: '#756f66' }}>Swipe up for pictures</Text>
+      </Pressable>
+    </GestureDetector>
 
       <HangoutFlowModal controller={calendar.hangoutEditor} circles={calendar.circles} />
 

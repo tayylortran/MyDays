@@ -6,6 +6,7 @@ import {
 import { CalendarMonthProvider } from '@/src/features/calendar/CalendarMonthProvider';
 import { Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function AppNavigator() {
   const { user, loading } = useAuth();
@@ -44,8 +45,10 @@ function AppNavigator() {
 
 export default function RootLayout() {
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <AuthProvider>
       <AppNavigator />
     </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

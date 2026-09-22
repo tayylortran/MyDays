@@ -94,7 +94,7 @@ export function usePicturesScreen() {
     [repo, circleId]
   );
 
-  // Reload when opening this tab or changing the filter.
+  // The panel mounts this screen each time it opens; reload on mount or filter changes.
   useFocusEffect(
     useCallback(() => {
       void load(true);

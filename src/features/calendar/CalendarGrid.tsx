@@ -1,7 +1,9 @@
 import { Circle, Hangout } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LayoutChangeEvent, Pressable, ScrollView, Text, View } from 'react-native';
+import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
+import type { SharedValue } from 'react-native-reanimated';
 
 type CalendarGridProps = {
   year: number;
@@ -10,6 +12,8 @@ type CalendarGridProps = {
   circleById: Record<string, Circle>;
   onPressDay: (date: string) => void;
   onPressHangout: (hangout: Hangout) => void;
+  openingGesture?: PanGesture;
+  atBottom?: SharedValue<boolean>;
 };
 
 export function CalendarGrid({
@@ -19,7 +23,14 @@ export function CalendarGrid({
   circleById,
   onPressDay,
   onPressHangout,
+  openingGesture,
+  atBottom,
 }: CalendarGridProps) {
+  const scrollGesture = useMemo(() => {
+    const gesture = Gesture.Native();
+    return openingGesture ? gesture.requireExternalGestureToFail(openingGesture) : gesture;
+  }, [openingGesture]);
+  const [contentHeight, setContentHeight] = useState(0);
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
   const [calendarHeight, setCalendarHeight] = useState(0);
@@ -34,6 +45,7 @@ export function CalendarGrid({
 
   function handleLayout(event: LayoutChangeEvent) {
     setCalendarHeight(event.nativeEvent.layout.height);
+    if (atBottom) atBottom.set(contentHeight <= event.nativeEvent.layout.height + 2);
   }
 
   function getTitleTextStyle(title: string) {
@@ -48,7 +60,17 @@ export function CalendarGrid({
 
   return (
     <View style={{ flex: 1 }} onLayout={handleLayout}>
+      <GestureDetector gesture={scrollGesture}>
       <ScrollView
+        bounces={false}
+        scrollEventThrottle={16}
+        onContentSizeChange={(_width, height) => {
+          setContentHeight(height);
+          if (atBottom) atBottom.set(height <= calendarHeight + 2);
+        }}
+        onScroll={({ nativeEvent }) => {
+          if (atBottom) atBottom.set(nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height >= nativeEvent.contentSize.height - 2);
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
       >
@@ -101,6 +123,7 @@ export function CalendarGrid({
         </View>
       ))}
       </ScrollView>
+      </GestureDetector>
     </View>
   );
 }

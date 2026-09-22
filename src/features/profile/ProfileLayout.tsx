@@ -1,6 +1,6 @@
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import type { ReactNode } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfileViewSwitcher } from './ProfileViewSwitcher';
 
 type Props = {
@@ -50,5 +50,12 @@ const styles = StyleSheet.create({
   toolbar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12, minHeight: 22 },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 40 },
   avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#ddd' },
-  username: { fontSize: 20, fontWeight: '600', flexShrink: 1 },
+  username: {
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }),
+    fontSize: 26,
+    fontWeight: '400',
+    letterSpacing: -0.5,
+    color: '#24211d',
+    flexShrink: 1,
+  },
 });
