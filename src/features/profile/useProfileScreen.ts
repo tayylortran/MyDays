@@ -22,6 +22,7 @@ export function useProfileScreen() {
   const picker = useRef({ request: 0, saving: false });
   const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [draftUsername, setDraftUsername] = useState('');
   const [draftPhotoUri, setDraftPhotoUri] = useState<string | null>(null);
 
@@ -89,9 +90,17 @@ export function useProfileScreen() {
     catch { Alert.alert('Day updated', 'Could not refresh your profile. Reopen this tab to try again.'); }
   };
 
-  const openSettings = () => {
+  const openProfileSettings = () => {
     setDraftUsername(settings.username);
     setDraftPhotoUri(settings.photoUri);
+    setProfileSettingsOpen(true);
+  };
+
+  const closeProfileSettings = () => {
+    setProfileSettingsOpen(false);
+  };
+
+  const openSettings = () => {
     setSettingsOpen(true);
   };
 
@@ -116,7 +125,7 @@ export function useProfileScreen() {
     setDraftPhotoUri(null);
   };
 
-  const saveSettings = async () => {
+  const saveProfileSettings = async () => {
     const nextSettings = {
       username: draftUsername.trim(),
       photoUri: draftPhotoUri,
@@ -129,7 +138,7 @@ export function useProfileScreen() {
       return;
     }
     setSettings(nextSettings);
-    setSettingsOpen(false);
+    setProfileSettingsOpen(false);
     try {
       setSettings(await repo.getProfileSettings());
     } catch {
@@ -162,6 +171,7 @@ export function useProfileScreen() {
     photoError,
     viewMode,
     settingsOpen,
+    profileSettingsOpen,
     draftUsername,
     draftPhotoUri,
     setViewMode,
@@ -173,8 +183,10 @@ export function useProfileScreen() {
     chooseFace,
     openSettings,
     closeSettings,
+    openProfileSettings,
+    closeProfileSettings,
     pickProfilePhoto,
     removeProfilePhoto,
-    saveSettings,
+    saveProfileSettings,
   };
 }

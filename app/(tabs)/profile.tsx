@@ -2,6 +2,7 @@ import { ChooseDayFaceModal } from '@/src/features/profile/ChooseDayFaceModal';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
 import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
 import { ProfileSettingsModal } from '@/src/features/profile/ProfileSettingsModal';
+import { SettingsModal } from '@/src/features/profile/SettingsModal';
 import { ProfileLayout } from '@/src/features/profile/ProfileLayout';
 import { useProfileScreen } from '@/src/features/profile/useProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,10 +14,12 @@ export default function Profile() {
   return (
     <ProfileLayout
       username={profile.username || 'Your name'} photoUri={profile.photoUri}
+      onPressIdentity={profile.openProfileSettings}
       year={profile.year} month={profile.month} totalPhotos={profile.totalProfilePhotos}
       viewMode={profile.viewMode} onChangeView={profile.setViewMode} onPrev={profile.prev} onNext={profile.next}
       toolbar={
-        <Pressable onPress={profile.openSettings} hitSlop={12}>
+        <Pressable onPress={profile.openSettings} hitSlop={12}
+          accessibilityRole="button" accessibilityLabel="Open settings">
           <Ionicons name="settings-outline" size={22} color="#333" />
         </Pressable>
       }
@@ -49,15 +52,16 @@ export default function Profile() {
       />
 
       <ProfileSettingsModal
-        visible={profile.settingsOpen}
+        visible={profile.profileSettingsOpen}
         username={profile.draftUsername}
         photoUri={profile.draftPhotoUri}
-        onClose={profile.closeSettings}
+        onClose={profile.closeProfileSettings}
         onChangeUsername={profile.setDraftUsername}
         onPickPhoto={profile.pickProfilePhoto}
         onRemovePhoto={profile.removeProfilePhoto}
-        onSave={profile.saveSettings}
+        onSave={profile.saveProfileSettings}
       />
+      <SettingsModal visible={profile.settingsOpen} onClose={profile.closeSettings} />
     </ProfileLayout>
   );
 }

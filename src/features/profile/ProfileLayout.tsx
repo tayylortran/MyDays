@@ -1,6 +1,6 @@
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import type { ReactNode } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProfileViewSwitcher } from './ProfileViewSwitcher';
 
 type Props = {
@@ -16,18 +16,27 @@ type Props = {
   onNext: () => void;
   children: ReactNode;
   bottomInset?: number;
+  onPressIdentity?: () => void;
 };
 
 // Both personal and friend profiles use the same geometry and visual defaults.
 export function ProfileLayout({ toolbar, username, photoUri, year, month, totalPhotos,
-  viewMode, onChangeView, onPrev, onNext, children, bottomInset = 0 }: Props) {
+  viewMode, onChangeView, onPrev, onNext, children, bottomInset = 0, onPressIdentity }: Props) {
+  const identity = (
+    <>
+      {photoUri ? <Image source={{ uri: photoUri }} style={styles.avatar} /> : <View style={styles.avatar} />}
+      <Text accessibilityRole="header" style={styles.username}>{username}</Text>
+    </>
+  );
   return (
     <View style={[styles.screen, { paddingBottom: bottomInset }]}>
       <View style={styles.toolbar}>{toolbar}</View>
-      <View style={styles.identity}>
-        {photoUri ? <Image source={{ uri: photoUri }} style={styles.avatar} /> : <View style={styles.avatar} />}
-        <Text accessibilityRole="header" style={styles.username}>{username}</Text>
-      </View>
+      {onPressIdentity ? (
+        <Pressable style={styles.identity} onPress={onPressIdentity}
+          accessibilityRole="button" accessibilityLabel="Open profile settings">
+          {identity}
+        </Pressable>
+      ) : <View style={styles.identity}>{identity}</View>}
       <MonthHeader year={year} month={month} onPrev={onPrev} onNext={onNext}
         subtitle={totalPhotos === null ? undefined : `${totalPhotos} ${totalPhotos === 1 ? 'photo' : 'photos'} total`} />
       <ProfileViewSwitcher viewMode={viewMode} onChange={onChangeView} />
