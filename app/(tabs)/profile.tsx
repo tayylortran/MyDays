@@ -5,11 +5,13 @@ import { ProfileSettingsModal } from '@/src/features/profile/ProfileSettingsModa
 import { SettingsModal } from '@/src/features/profile/SettingsModal';
 import { ProfileLayout } from '@/src/features/profile/ProfileLayout';
 import { useProfileScreen } from '@/src/features/profile/useProfileScreen';
+import { useAuth } from '@/src/features/auth/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 export default function Profile() {
   const profile = useProfileScreen();
+  const { user } = useAuth();
 
   return (
     <ProfileLayout
@@ -54,10 +56,12 @@ export default function Profile() {
       <ProfileSettingsModal
         visible={profile.profileSettingsOpen}
         username={profile.draftUsername}
+        email={user?.email ?? null}
         photoUri={profile.draftPhotoUri}
         onClose={profile.closeProfileSettings}
         onChangeUsername={profile.setDraftUsername}
         onPickPhoto={profile.pickProfilePhoto}
+        onTakePhoto={profile.takeProfilePhoto}
         onRemovePhoto={profile.removeProfilePhoto}
         onSave={profile.saveProfileSettings}
       />

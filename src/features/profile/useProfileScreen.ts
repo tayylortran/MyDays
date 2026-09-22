@@ -109,20 +109,38 @@ export function useProfileScreen() {
   };
 
   const pickProfilePhoto = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert('Photo access needed', 'Enable photo access in Settings to add a profile photo.');
-      return;
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Photo access needed', 'Enable photo access in Settings to add a profile photo.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+      if (result.canceled) return;
+
+      setDraftPhotoUri(result.assets[0].uri);
+    } catch {
+      Alert.alert('Could not open photos', 'Please try again.');
     }
-
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 1 });
-    if (result.canceled) return;
-
-    setDraftPhotoUri(result.assets[0].uri);
   };
 
   const removeProfilePhoto = () => {
     setDraftPhotoUri(null);
+  };
+
+  const takeProfilePhoto = async () => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Camera access needed', 'Enable camera access in Settings to take a profile photo.');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 1 });
+      if (!result.canceled) setDraftPhotoUri(result.assets[0].uri);
+    } catch {
+      Alert.alert('Could not open camera', 'Please try again or upload a photo instead.');
+    }
   };
 
   const saveProfileSettings = async () => {
@@ -186,6 +204,7 @@ export function useProfileScreen() {
     openProfileSettings,
     closeProfileSettings,
     pickProfilePhoto,
+    takeProfilePhoto,
     removeProfilePhoto,
     saveProfileSettings,
   };

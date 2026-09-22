@@ -28,7 +28,7 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Allow MyDays to use your camera to add photos to your hangouts.",
+          "cameraPermission": "Allow MyDays to use your camera to add photos to your hangouts and profile.",
           "photosPermission": "Allow MyDays to access your photos to add them to your hangouts and profile.",
           "microphonePermission": false
         }

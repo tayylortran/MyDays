@@ -1,12 +1,15 @@
-import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type ProfileSettingsModalProps = {
   visible: boolean;
   username: string;
+  email: string | null;
   photoUri: string | null;
   onClose: () => void;
   onChangeUsername: (value: string) => void;
   onPickPhoto: () => void;
+  onTakePhoto: () => void;
   onRemovePhoto: () => void;
   onSave: () => void;
 };
@@ -14,17 +17,31 @@ type ProfileSettingsModalProps = {
 export function ProfileSettingsModal({
   visible,
   username,
+  email,
   photoUri,
   onClose,
   onChangeUsername,
   onPickPhoto,
+  onTakePhoto,
   onRemovePhoto,
   onSave,
 }: ProfileSettingsModalProps) {
+  const [editingPicture, setEditingPicture] = useState(false);
+  const close = () => {
+    setEditingPicture(false);
+    onClose();
+  };
+  const choosePictureAction = (action: () => void) => {
+    setEditingPicture(false);
+    action();
+  };
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} onPress={onClose}>
+    <Modal visible={visible} transparent animationType="slide"
+      onRequestClose={() => editingPicture ? setEditingPicture(false) : close()}>
+      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} onPress={close}>
         <KeyboardAvoidingView
+          accessibilityElementsHidden={editingPicture}
+          importantForAccessibility={editingPicture ? 'no-hide-descendants' : 'auto'}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1, justifyContent: 'flex-end' }}
         >
@@ -58,8 +75,17 @@ export function ProfileSettingsModal({
                   <Text style={{ color: '#999', fontSize: 12 }}>No photo</Text>
                 </View>
               )}
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => { Keyboard.dismiss(); setEditingPicture(true); }}
+                style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 }}
+              >
+                <Text style={{ color: '#333', fontWeight: '600', textDecorationLine: 'underline' }}>Edit picture</Text>
+              </Pressable>
             </View>
 
+            <View style={{ gap: 8 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600' }}>Username</Text>
             <TextInput
               placeholder="Username"
               accessibilityLabel="Username"
@@ -81,37 +107,14 @@ export function ProfileSettingsModal({
             <Text style={{ color: '#666', fontSize: 12 }}>
               You can change your username twice in any 14-day period.
             </Text>
-
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable
-                onPress={onPickPhoto}
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                  backgroundColor: '#333',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '600' }}>Upload photo</Text>
-              </Pressable>
-              <Pressable
-                onPress={onRemovePhoto}
-                disabled={!photoUri}
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                  backgroundColor: photoUri ? '#eee' : '#f5f5f5',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ color: photoUri ? '#333' : '#aaa', fontWeight: '600' }}>Delete photo</Text>
-              </Pressable>
+            </View>
+            <View style={{ gap: 8 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600' }}>Email</Text>
+              <Text selectable style={{ color: '#666', fontSize: 15 }}>{email ?? 'No email available'}</Text>
             </View>
 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
-              <Pressable onPress={onClose} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+              <Pressable onPress={close} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
                 <Text style={{ color: '#666' }}>Cancel</Text>
               </Pressable>
               <Pressable
@@ -128,6 +131,29 @@ export function ProfileSettingsModal({
             </View>
           </Pressable>
         </KeyboardAvoidingView>
+        {editingPicture && (
+          <Pressable
+            onPress={() => setEditingPicture(false)}
+            style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: 24 }]}
+          >
+            <Pressable onPress={() => {}} accessibilityViewIsModal style={{ backgroundColor: '#fff', borderRadius: 20, padding: 20, gap: 4 }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>Edit picture</Text>
+              <Pressable accessibilityRole="button" style={{ paddingVertical: 14 }} onPress={() => choosePictureAction(onPickPhoto)}>
+                <Text style={{ fontSize: 16 }}>Upload photo</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" style={{ paddingVertical: 14 }} onPress={() => choosePictureAction(onTakePhoto)}>
+                <Text style={{ fontSize: 16 }}>Take a picture</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" accessibilityState={{ disabled: !photoUri }} disabled={!photoUri}
+                style={{ paddingVertical: 14 }} onPress={() => choosePictureAction(onRemovePhoto)}>
+                <Text style={{ fontSize: 16, color: photoUri ? '#a33' : '#aaa' }}>Delete photo</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" style={{ paddingVertical: 14 }} onPress={() => setEditingPicture(false)}>
+                <Text style={{ fontSize: 16, color: '#666' }}>Cancel</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        )}
       </Pressable>
     </Modal>
   );
