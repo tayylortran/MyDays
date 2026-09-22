@@ -3,6 +3,7 @@ import { useRepo } from '@/src/data/RepositoryProvider';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
 import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
 import { ProfileLayout } from '@/src/features/profile/ProfileLayout';
+import { ProfilePhotoPreview } from '@/src/features/profile/ProfilePhotoPreview';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -18,6 +19,7 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
   const [month, setMonth] = useState(() => ({ year: new Date().getFullYear(), month: new Date().getMonth() }));
   const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar');
   const [result, setResult] = useState<Result | null>(null);
+  const [previewDate, setPreviewDate] = useState<string | null>(null);
   const request = useRef(0);
   const monthKey = `${String(month.year).padStart(4, '0')}-${String(month.month + 1).padStart(2, '0')}`;
   const key = `${userId}:${monthKey}`;
@@ -27,6 +29,7 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
   const load = useCallback(async () => {
     const version = ++request.current;
     setResult(null);
+    setPreviewDate(null);
     try {
       const next = await repo.getFriendProfile(userId, monthKey);
       if (version === request.current) setResult({ key, profile: next, error: '' });
@@ -67,8 +70,10 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
         <Pressable accessibilityRole="button" onPress={() => { void load(); }} style={styles.retry}><Text style={styles.retryText}>Try again</Text></Pressable>
       </View> : !profile ? <ActivityIndicator color="#716d66" style={styles.message} /> : <>
         {viewMode === 'calendar' ? <ProfileCalendarGrid year={month.year} month={month.month}
+          onViewPhoto={setPreviewDate}
           faces={Object.fromEntries(profile.covers.map((cover) => [cover.date, cover]))} />
-          : <View style={{ flex: 1, marginHorizontal: -8 }}><ProfilePhotoGrid key={key} photos={profile.covers} readOnly /></View>}
+          : <View style={{ flex: 1, marginHorizontal: -8 }}><ProfilePhotoGrid key={key} photos={profile.covers} /></View>}
+        <ProfilePhotoPreview photo={profile.covers.find((cover) => cover.date === previewDate) ?? null} onClose={() => setPreviewDate(null)} />
       </>}
     </ProfileLayout>
   );

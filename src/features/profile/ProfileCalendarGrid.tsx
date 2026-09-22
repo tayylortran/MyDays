@@ -10,6 +10,7 @@ type ProfileCalendarGridProps = {
   faces: Record<string, Pick<Photo, 'uri' | 'thumbUri' | 'cacheKey' | 'thumbCacheKey'>>;
   photoDates?: ReadonlySet<string>;
   onPressDay?: (date: string) => void;
+  onViewPhoto?: (date: string) => void;
 };
 
 export function ProfileCalendarGrid({
@@ -18,6 +19,7 @@ export function ProfileCalendarGrid({
   faces,
   photoDates = new Set(),
   onPressDay,
+  onViewPhoto,
 }: ProfileCalendarGridProps) {
   const dayCellAspectRatio = 0.8;
   const cells = monthGrid(year, month);
@@ -43,10 +45,10 @@ export function ProfileCalendarGrid({
             <View key={di} style={{ flex: 1, aspectRatio: dayCellAspectRatio, padding: 2 }}>
               {date && (
                 <Pressable
-                  onPress={() => onPressDay?.(date)}
-                  accessibilityRole={onPressDay ? 'button' : faces[date] ? 'image' : 'text'}
-                  accessibilityLabel={`${date}, ${!onPressDay ? faces[date] ? 'Cover photo' : 'No cover photo' : faces[date] ? 'Change cover photo' : photoDates.has(date) ? 'Choose cover photo' : 'No photos'}`}
-                  disabled={!onPressDay || (!faces[date] && !photoDates.has(date))}
+                  onPress={() => onViewPhoto ? onViewPhoto(date) : onPressDay?.(date)}
+                  accessibilityRole={onPressDay || (onViewPhoto && faces[date]) ? 'button' : faces[date] ? 'image' : 'text'}
+                  accessibilityLabel={`${date}, ${onViewPhoto ? faces[date] ? 'View photo' : 'No cover photo' : !onPressDay ? faces[date] ? 'Cover photo' : 'No cover photo' : faces[date] ? 'Change cover photo' : photoDates.has(date) ? 'Choose cover photo' : 'No photos'}`}
+                  disabled={onViewPhoto ? !faces[date] : !onPressDay || (!faces[date] && !photoDates.has(date))}
                   style={({ pressed }) => ({
                     flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee',
                     borderWidth: !faces[date] && photoDates.has(date) ? 1 : 0,
