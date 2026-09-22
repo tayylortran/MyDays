@@ -1,10 +1,9 @@
 import { PhotoImage } from '@/src/components/PhotoImage';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
-import type { SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedScrollHandler, type SharedValue } from 'react-native-reanimated';
 import {
     ActivityIndicator,
-    FlatList,
     Platform,
     Pressable,
     ScrollView,
@@ -15,9 +14,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePicturesScreen } from './usePicturesScreen';
 
-export default function PicturesScreen({ closeGesture, scrollY }: { closeGesture: PanGesture; scrollY: SharedValue<number> }) {
+export default function PicturesScreen({ closeGesture, headerGesture, header, scrollY }: {
+  closeGesture: PanGesture;
+  headerGesture: PanGesture;
+  header: ReactNode;
+  scrollY: SharedValue<number>;
+}) {
   const pictures = usePicturesScreen();
   const scrollGesture = useMemo(() => Gesture.Native().requireExternalGestureToFail(closeGesture), [closeGesture]);
+  const filterGesture = useMemo(() => Gesture.Native().requireExternalGestureToFail(headerGesture), [headerGesture]);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.set(Math.max(0, event.contentOffset.y));
+  });
 
   const filters = [
     { id: undefined, name: 'All', color: undefined },
@@ -30,6 +38,9 @@ export default function PicturesScreen({ closeGesture, scrollY }: { closeGesture
 
   return (
     <SafeAreaView style={styles.screen} edges={['bottom', 'left', 'right']}>
+      <GestureDetector gesture={headerGesture}>
+      <View>
+      {header}
       <View style={styles.header}>
         <Text style={styles.title}>Pictures</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Refresh pictures" disabled={pictures.loading}
@@ -44,6 +55,7 @@ export default function PicturesScreen({ closeGesture, scrollY }: { closeGesture
       </View>
 
       <View>
+        <GestureDetector gesture={filterGesture}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -84,15 +96,18 @@ export default function PicturesScreen({ closeGesture, scrollY }: { closeGesture
             );
           })}
         </ScrollView>
+        </GestureDetector>
       </View>
+      </View>
+      </GestureDetector>
 
       <GestureDetector gesture={closeGesture}>
       <GestureDetector gesture={scrollGesture}>
-      <FlatList
+      <Animated.FlatList
         bounces={false}
         overScrollMode="never"
         scrollEventThrottle={16}
-        onScroll={({ nativeEvent }) => { scrollY.set(Math.max(0, nativeEvent.contentOffset.y)); }}
+        onScroll={onScroll}
         key={pictures.circleId ?? 'all'}
         style={styles.list}
         data={pictures.photos}

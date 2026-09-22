@@ -69,7 +69,6 @@ export default function Home() {
 
       <CalendarGrid //component
         openingGesture={pictures.gesture}
-        atBottom={pictures.calendarAtBottom}
         year={calendar.year}
         month={calendar.month}
         byDate={calendar.byDate}

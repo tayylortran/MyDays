@@ -3,7 +3,6 @@ import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
 import { useMemo, useState } from 'react';
 import { LayoutChangeEvent, Pressable, ScrollView, Text, View } from 'react-native';
 import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
-import type { SharedValue } from 'react-native-reanimated';
 
 type CalendarGridProps = {
   year: number;
@@ -13,7 +12,6 @@ type CalendarGridProps = {
   onPressDay: (date: string) => void;
   onPressHangout: (hangout: Hangout) => void;
   openingGesture?: PanGesture;
-  atBottom?: SharedValue<boolean>;
 };
 
 export function CalendarGrid({
@@ -24,13 +22,11 @@ export function CalendarGrid({
   onPressDay,
   onPressHangout,
   openingGesture,
-  atBottom,
 }: CalendarGridProps) {
   const scrollGesture = useMemo(() => {
     const gesture = Gesture.Native();
     return openingGesture ? gesture.requireExternalGestureToFail(openingGesture) : gesture;
   }, [openingGesture]);
-  const [contentHeight, setContentHeight] = useState(0);
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
   const [calendarHeight, setCalendarHeight] = useState(0);
@@ -45,7 +41,6 @@ export function CalendarGrid({
 
   function handleLayout(event: LayoutChangeEvent) {
     setCalendarHeight(event.nativeEvent.layout.height);
-    if (atBottom) atBottom.set(contentHeight <= event.nativeEvent.layout.height + 2);
   }
 
   function getTitleTextStyle(title: string) {
@@ -63,14 +58,7 @@ export function CalendarGrid({
       <GestureDetector gesture={scrollGesture}>
       <ScrollView
         bounces={false}
-        scrollEventThrottle={16}
-        onContentSizeChange={(_width, height) => {
-          setContentHeight(height);
-          if (atBottom) atBottom.set(height <= calendarHeight + 2);
-        }}
-        onScroll={({ nativeEvent }) => {
-          if (atBottom) atBottom.set(nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height >= nativeEvent.contentSize.height - 2);
-        }}
+        scrollEnabled={!openingGesture}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
       >
@@ -85,7 +73,7 @@ export function CalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, height: dayCellHeight, minHeight: 72, padding: 3 }}>
+            <View key={di} style={{ flex: 1, height: dayCellHeight, minHeight: openingGesture ? 0 : 72, padding: 3, overflow: 'hidden' }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
