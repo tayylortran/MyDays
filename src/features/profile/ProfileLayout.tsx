@@ -25,7 +25,14 @@ export function ProfileLayout({ toolbar, username, photoUri, year, month, totalP
   const identity = (
     <>
       {photoUri ? <Image source={{ uri: photoUri }} style={styles.avatar} /> : <View style={styles.avatar} />}
-      <Text accessibilityRole="header" style={styles.username}>{username}</Text>
+      <View style={styles.identityText}>
+        <Text accessibilityRole="header" style={styles.username}>{username}</Text>
+        {totalPhotos !== null && (
+          <Text style={styles.photoCount}>
+            {totalPhotos} {totalPhotos === 1 ? 'photo' : 'photos'}
+          </Text>
+        )}
+      </View>
     </>
   );
   return (
@@ -37,8 +44,7 @@ export function ProfileLayout({ toolbar, username, photoUri, year, month, totalP
           {identity}
         </Pressable>
       ) : <View style={styles.identity}>{identity}</View>}
-      <MonthHeader year={year} month={month} onPrev={onPrev} onNext={onNext}
-        subtitle={totalPhotos === null ? undefined : `${totalPhotos} ${totalPhotos === 1 ? 'photo' : 'photos'} total`} />
+      <MonthHeader year={year} month={month} onPrev={onPrev} onNext={onNext} />
       <ProfileViewSwitcher viewMode={viewMode} onChange={onChangeView} />
       {children}
     </View>
@@ -50,6 +56,15 @@ const styles = StyleSheet.create({
   toolbar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12, minHeight: 22 },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 40 },
   avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#ddd' },
+  identityText: { flexShrink: 1 },
+  photoCount: {
+    marginTop: 6,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: '#756f66',
+  },
   username: {
     fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }),
     fontSize: 26,

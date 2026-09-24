@@ -1,12 +1,37 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { PicturesPanelProvider } from '@/src/features/pictures/PicturesPanel';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <PicturesPanelProvider>
-    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: '#333' }}>
+    <Tabs
+      safeAreaInsets={{ bottom: 0 }}
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#333',
+        tabBarStyle: {
+          height: 64,
+          marginHorizontal: 16,
+          marginBottom: Math.max(insets.bottom, 12),
+          marginTop: 8,
+          paddingTop: 8,
+          paddingBottom: 8,
+          borderRadius: 32,
+          borderTopWidth: 0,
+          backgroundColor: '#fff',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
