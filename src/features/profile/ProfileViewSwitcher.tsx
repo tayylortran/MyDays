@@ -13,7 +13,7 @@ export function ProfileViewSwitcher({ viewMode, onChange }: ProfileViewSwitcherP
         style={{
           flex: 1,
           paddingVertical: 10,
-          borderRadius: 10,
+          borderRadius: 999,
           backgroundColor: viewMode === 'calendar' ? '#333' : '#eee',
           alignItems: 'center',
         }}
@@ -28,7 +28,7 @@ export function ProfileViewSwitcher({ viewMode, onChange }: ProfileViewSwitcherP
         style={{
           flex: 1,
           paddingVertical: 10,
-          borderRadius: 10,
+          borderRadius: 999,
           backgroundColor: viewMode === 'grid' ? '#333' : '#eee',
           alignItems: 'center',
         }}

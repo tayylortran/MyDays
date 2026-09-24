@@ -10,12 +10,13 @@ type ProfilePhotoGridProps = {
 
 export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<ProfilePhotoGridProps['photos'][number] | null>(null);
+  const sortedPhotos = [...photos].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {photos.map((photo) => (
+          {sortedPhotos.map((photo) => (
             <Pressable
               key={photo.date}
               accessibilityLabel={`View photo from ${photo.date}`}

@@ -165,7 +165,6 @@ export function useProfileScreen() {
   };
 
   const gridPhotos = Object.entries(faces)
-    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
     .map(([date, photo]) => ({
       date,
       ...photo,
