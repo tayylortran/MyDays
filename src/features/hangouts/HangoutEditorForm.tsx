@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View, type TextInput as NativeTextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hangoutDate, hangoutSerif } from './hangoutStyles';
+import { colorText } from '@/src/lib/color';
 import type { HangoutEditorController } from './useHangoutEditor';
 
 // The surrounding flow owns the native Modal so view/edit never stack modals.
@@ -79,7 +80,7 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
                 <Pressable key={c.id} disabled={disabled} accessibilityRole="button" accessibilityState={{ selected, disabled }}
                   onPress={() => controller.change('circleId', c.id)}
                   style={[styles.circle, { borderColor: c.color, backgroundColor: selected ? c.color : 'transparent' }]}>
-                  <Text style={{ color: selected ? colors.onColor : colors.text, fontSize: 13 }}>{c.name}</Text>
+                  <Text style={{ color: selected ? colorText(c.color) : colors.text, fontSize: 13 }}>{c.name}</Text>
                 </Pressable>
               );
             })}
@@ -120,7 +121,7 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
           <Pressable accessibilityRole="button" accessibilityState={{ disabled, busy: controller.working === 'save' }}
             disabled={disabled} onPress={controller.save}
             style={({ pressed }) => [styles.save, { backgroundColor: color, opacity: disabled || pressed ? 0.65 : 1 }]}>
-            <Text style={styles.saveText}>{controller.working === 'save' ? 'Saving…' : original ? 'Save changes' : `Save${circle ? ` to ${circle.name}` : ''}`}</Text>
+            <Text style={[styles.saveText, { color: colorText(color) }]}>{controller.working === 'save' ? 'Saving…' : original ? 'Save changes' : `Save${circle ? ` to ${circle.name}` : ''}`}</Text>
           </Pressable>
         </View>
         {photoMenu && !disabled && (

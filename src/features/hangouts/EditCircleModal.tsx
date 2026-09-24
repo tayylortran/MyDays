@@ -1,7 +1,9 @@
 import { useTheme } from '@/src/theme/ThemeProvider';
 import { Text, TextInput } from '@/src/theme/primitives';
 import { Circle } from '@/src/data/types';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { CircleColorPicker, ColorWheelSwatch } from './CircleColorPicker';
 
 type EditCircleModalProps = {
   editingCircle: Circle | null;
@@ -33,7 +35,7 @@ export function EditCircleModal({
   deletingCircle,
   circleHangoutCount,
   deleteDestinationId,
-  onClose,
+  onClose: onDismiss,
   onChangeNewCircleName,
   onChangeCircleColor,
   onSaveCircle,
@@ -43,10 +45,15 @@ export function EditCircleModal({
   onDelete,
 }: EditCircleModalProps) {
   const { colors } = useTheme();
+  const [customOpen, setCustomOpen] = useState(false);
+  const [colorDragging, setColorDragging] = useState(false);
+  const closePicker = () => { setColorDragging(false); setCustomOpen(false); };
+  const onClose = () => { closePicker(); onDismiss(); };
   const open = creatingCircle || editingCircle !== null;
+  const customSelected = !CIRCLE_COLORS.includes(circleColor.toUpperCase());
 
   return (
-    <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={open} transparent animationType="slide" onRequestClose={() => customOpen ? closePicker() : onClose()}>
       <Pressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -60,9 +67,15 @@ export function EditCircleModal({
               borderTopRightRadius: 20,
               padding: 20,
               paddingBottom: 34,
-              gap: 12,
+              maxHeight: '90%',
             }}
           >
+            <ScrollView keyboardShouldPersistTaps="handled" scrollEnabled={!colorDragging}
+              bounces={false} overScrollMode="never" contentContainerStyle={{ gap: 12 }}>
+            {customOpen ? (
+              <CircleColorPicker color={circleColor} onCancel={closePicker} onInteractionChange={setColorDragging}
+                onSelect={(color) => { onChangeCircleColor(color); closePicker(); }} />
+            ) : <>
             <Text style={{ fontSize: 18, fontWeight: '600' }}>
               {creatingCircle ? 'New circle' : 'Edit circle'}
             </Text>
@@ -142,19 +155,21 @@ export function EditCircleModal({
                   }}
                 />
 
-                <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
                   {CIRCLE_COLORS.map((color) => {
-                    const selected = color === circleColor;
+                    const selected = color.toUpperCase() === circleColor.toUpperCase();
                     return (
                       <Pressable
                         key={color}
                         accessibilityLabel={`Choose ${color} circle color`}
                         accessibilityRole="button"
+                        accessibilityState={{ selected }}
                         onPress={() => onChangeCircleColor(color)}
                         style={{
-                          width: 30,
-                          height: 30,
-                          borderRadius: 15,
+                          flex: 1,
+                          maxWidth: 40,
+                          aspectRatio: 1,
+                          borderRadius: 20,
                           backgroundColor: color,
                           borderWidth: selected ? 3 : 0,
                           borderColor: colors.border,
@@ -162,6 +177,13 @@ export function EditCircleModal({
                       />
                     );
                   })}
+                  <Pressable accessibilityRole="button" accessibilityLabel="Choose a custom circle color"
+                    accessibilityState={{ selected: customSelected }}
+                    onPress={() => { Keyboard.dismiss(); setCustomOpen(true); }}
+                    style={{ flex: 1, maxWidth: 40, aspectRatio: 1, borderRadius: 20, overflow: 'hidden',
+                      borderWidth: customSelected ? 3 : 0, borderColor: colors.border }}>
+                    <ColorWheelSwatch />
+                  </Pressable>
                 </View>
 
                 {!creatingCircle && (
@@ -185,6 +207,8 @@ export function EditCircleModal({
                 </View>
               </>
             )}
+            </>}
+            </ScrollView>
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
