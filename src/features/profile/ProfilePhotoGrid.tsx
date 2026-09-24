@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
 import { PhotoImage } from '@/src/components/PhotoImage';
 import type { LibraryPhoto } from '@/src/data/types';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ type ProfilePhotoGridProps = {
 };
 
 export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
+  const { colors } = useTheme();
   const [selectedPhoto, setSelectedPhoto] = useState<ProfilePhotoGridProps['photos'][number] | null>(null);
   const sortedPhotos = [...photos].sort((a, b) => b.date.localeCompare(a.date));
 
@@ -30,7 +32,7 @@ export function ProfilePhotoGrid({ photos }: ProfilePhotoGridProps) {
                 style={{
                   width: '100%',
                   aspectRatio: 0.8,
-                  backgroundColor: '#eee',
+                  backgroundColor: colors.surfaceAlt,
                 }}
                 contentFit="cover"
               />

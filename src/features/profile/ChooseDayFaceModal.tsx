@@ -1,7 +1,10 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { PhotoImage } from '@/src/components/PhotoImage';
 import type { Photo } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ChooseDayFaceModalProps = {
@@ -19,6 +22,8 @@ type ChooseDayFaceModalProps = {
 export function ChooseDayFaceModal({
   openDate, dayPhotos, selectedPhotoId, currentPhotoId, onSelectPhoto, saving, error, onClose, onChooseFace,
 }: ChooseDayFaceModalProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
   const [year, month, day] = (openDate ?? '').split('-').map(Number);
   const date = openDate
@@ -54,7 +59,7 @@ export function ChooseDayFaceModal({
                     <PhotoImage photo={item} thumbnail contentFit="cover" style={styles.photo} />
                     {selected && (
                       <View style={styles.check}>
-                        <Ionicons name="checkmark" size={14} color="#fff" />
+                        <Ionicons name="checkmark" size={14} color={colors.onColor} />
                       </View>
                     )}
                   </Pressable>
@@ -74,20 +79,20 @@ export function ChooseDayFaceModal({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' },
-  sheet: { maxHeight: '80%', backgroundColor: '#fffdfa', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20 },
-  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#ddd8d1', alignSelf: 'center', marginTop: 10, marginBottom: 20 },
-  title: { fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }), fontSize: 27, color: '#292622' },
-  caption: { fontSize: 13, color: '#756f66', marginTop: 6, marginBottom: 18 },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.overlay },
+  sheet: { maxHeight: '80%', backgroundColor: colors.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20 },
+  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: colors.pressed, alignSelf: 'center', marginTop: 10, marginBottom: 20 },
+  title: { fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }), fontSize: 27, color: colors.text },
+  caption: { fontSize: 13, color: colors.muted, marginTop: 6, marginBottom: 18 },
   grid: { flexGrow: 0, flexShrink: 1, marginHorizontal: -3 },
   gridContent: { paddingBottom: 6 },
   cell: { width: '33.333333%', padding: 3 },
   photoButton: { aspectRatio: 0.8, borderRadius: 14, borderWidth: 2, borderColor: 'transparent', padding: 1 },
-  selected: { borderColor: '#bd3d39' },
-  photo: { width: '100%', height: '100%', borderRadius: 10, backgroundColor: '#eee' },
+  selected: { borderColor: colors.accent },
+  photo: { width: '100%', height: '100%', borderRadius: 10, backgroundColor: colors.surfaceAlt },
   check: { position: 'absolute', right: 7, top: 7, width: 22, height: 22, borderRadius: 11, backgroundColor: '#bd3d39', alignItems: 'center', justifyContent: 'center' },
-  error: { color: '#a33', marginTop: 8, fontSize: 13 },
-  confirm: { minHeight: 48, borderRadius: 14, backgroundColor: '#211e1a', alignItems: 'center', justifyContent: 'center', marginTop: 14 },
-  confirmText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  error: { color: colors.danger, marginTop: 8, fontSize: 13 },
+  confirm: { minHeight: 48, borderRadius: 14, backgroundColor: colors.action, alignItems: 'center', justifyContent: 'center', marginTop: 14 },
+  confirmText: { color: colors.onAction, fontSize: 15, fontWeight: '600' },
 });

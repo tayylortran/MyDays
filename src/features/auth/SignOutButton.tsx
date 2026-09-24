@@ -1,8 +1,11 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { signOut } from './authService';
 
 export default function SignOutButton() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,18 +36,18 @@ export default function SignOutButton() {
           paddingVertical: 10,
           paddingHorizontal: 18,
           borderRadius: 10,
-          backgroundColor: pressed ? '#ddd' : '#eee',
+          backgroundColor: pressed ? colors.surfaceAlt : colors.surfaceAlt,
           alignItems: 'center',
           justifyContent: 'center',
           opacity: loading ? 0.6 : 1,
         })}
       >
-        <Text style={{ color: '#333', fontWeight: '600' }}>
+        <Text style={{ color: colors.text, fontWeight: '600' }}>
           {loading ? 'Signing out...' : 'Sign out'}
         </Text>
       </Pressable>
       {error ? (
-        <Text accessibilityLiveRegion="polite" style={{ color: '#a33', fontSize: 13 }}>
+        <Text accessibilityLiveRegion="polite" style={{ color: colors.danger, fontSize: 13 }}>
           {error}
         </Text>
       ) : null}

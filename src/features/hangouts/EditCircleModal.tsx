@@ -1,5 +1,7 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text, TextInput } from '@/src/theme/primitives';
 import { Circle } from '@/src/data/types';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
 
 type EditCircleModalProps = {
   editingCircle: Circle | null;
@@ -40,11 +42,12 @@ export function EditCircleModal({
   onChangeDeleteDestination,
   onDelete,
 }: EditCircleModalProps) {
+  const { colors } = useTheme();
   const open = creatingCircle || editingCircle !== null;
 
   return (
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }} onPress={onClose}>
+      <Pressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1, justifyContent: 'flex-end' }}
@@ -52,7 +55,7 @@ export function EditCircleModal({
           <Pressable
             onPress={() => {}}
             style={{
-              backgroundColor: '#fff',
+              backgroundColor: colors.surface,
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               padding: 20,
@@ -68,7 +71,7 @@ export function EditCircleModal({
               <>
                 {circleHangoutCount > 0 ? (
                   <>
-                    <Text style={{ color: '#666' }}>
+                    <Text style={{ color: colors.muted }}>
                       Move {circleHangoutCount} {circleHangoutCount === 1 ? 'hangout' : 'hangouts'} to:
                     </Text>
                     {circles
@@ -84,27 +87,27 @@ export function EditCircleModal({
                               alignItems: 'center',
                               gap: 8,
                               borderWidth: 1.5,
-                              borderColor: selected ? circle.color : '#ddd',
+                              borderColor: selected ? circle.color : colors.border,
                               borderRadius: 10,
                               padding: 12,
                             }}
                           >
                             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: circle.color }} />
-                            <Text style={{ color: '#333' }}>{circle.name}</Text>
+                            <Text style={{ color: colors.text }}>{circle.name}</Text>
                           </Pressable>
                         );
                       })}
                     {circles.length === 1 && (
-                      <Text style={{ color: '#B42318' }}>Create another circle before deleting this one.</Text>
+                      <Text style={{ color: colors.danger }}>Create another circle before deleting this one.</Text>
                     )}
                   </>
                 ) : (
-                  <Text style={{ color: '#666' }}>This circle has no hangouts to move.</Text>
+                  <Text style={{ color: colors.muted }}>This circle has no hangouts to move.</Text>
                 )}
 
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
                   <Pressable onPress={onCancelDelete} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                    <Text style={{ color: '#666' }}>Back</Text>
+                    <Text style={{ color: colors.muted }}>Back</Text>
                   </Pressable>
                   <Pressable
                     disabled={circleHangoutCount > 0 && !deleteDestinationId}
@@ -113,10 +116,10 @@ export function EditCircleModal({
                       paddingHorizontal: 18,
                       paddingVertical: 10,
                       borderRadius: 10,
-                      backgroundColor: circleHangoutCount > 0 && !deleteDestinationId ? '#D8A6A1' : '#B42318',
+                      backgroundColor: circleHangoutCount > 0 && !deleteDestinationId ? colors.pressed : colors.dangerFill,
                     }}
                   >
-                    <Text style={{ color: '#fff', fontWeight: '600' }}>
+                    <Text style={{ color: colors.onColor, fontWeight: '600' }}>
                       {circleHangoutCount > 0 ? 'Move & delete' : 'Delete'}
                     </Text>
                   </Pressable>
@@ -131,7 +134,7 @@ export function EditCircleModal({
                   onSubmitEditing={onSaveCircle}
                   style={{
                     borderWidth: 1,
-                    borderColor: '#ddd',
+                    borderColor: colors.border,
                     borderRadius: 10,
                     paddingHorizontal: 12,
                     paddingVertical: 10,
@@ -154,7 +157,7 @@ export function EditCircleModal({
                           borderRadius: 15,
                           backgroundColor: color,
                           borderWidth: selected ? 3 : 0,
-                          borderColor: '#222',
+                          borderColor: colors.border,
                         }}
                       />
                     );
@@ -163,19 +166,19 @@ export function EditCircleModal({
 
                 {!creatingCircle && (
                   <Pressable onPress={onStartDelete} style={{ alignSelf: 'flex-start', paddingVertical: 6 }}>
-                    <Text style={{ color: '#B42318', fontWeight: '600' }}>Delete circle</Text>
+                    <Text style={{ color: colors.danger, fontWeight: '600' }}>Delete circle</Text>
                   </Pressable>
                 )}
 
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
                   <Pressable onPress={onClose} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                    <Text style={{ color: '#666' }}>Cancel</Text>
+                    <Text style={{ color: colors.muted }}>Cancel</Text>
                   </Pressable>
                   <Pressable
                     onPress={onSaveCircle}
-                    style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: '#333' }}
+                    style={{ paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.action }}
                   >
-                    <Text style={{ color: '#fff', fontWeight: '600' }}>
+                    <Text style={{ color: colors.onAction, fontWeight: '600' }}>
                       {creatingCircle ? 'Add' : 'Save'}
                     </Text>
                   </Pressable>

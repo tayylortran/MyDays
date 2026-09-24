@@ -1,0 +1,43 @@
+export const lightColors = {
+  background: '#f2f1ee',
+  surface: '#fffdfa',
+  surfaceAlt: '#f4f2ee',
+  pressed: '#e6e1d9',
+  border: '#ddd8d1',
+  text: '#24211d',
+  secondary: '#514b43',
+  muted: '#756f66',
+  subtle: '#918b81',
+  disabled: '#aaa',
+  action: '#333',
+  onAction: '#fffdfa',
+  accent: '#bd3d39',
+  danger: '#b42318',
+  dangerFill: '#b42318',
+  onColor: '#fff',
+  overlay: 'rgba(0,0,0,0.35)',
+  floating: 'rgba(255,253,250,0.92)',
+};
+
+export type ThemeColors = typeof lightColors;
+
+export const darkColors: ThemeColors = {
+  background: '#191816',
+  surface: '#24221f',
+  surfaceAlt: '#2d2a26',
+  pressed: '#3c3731',
+  border: '#4a443d',
+  text: '#f3eee6',
+  secondary: '#d5ccbf',
+  muted: '#beb3a4',
+  subtle: '#aa9f90',
+  disabled: '#857d72',
+  action: '#e8dfd2',
+  onAction: '#24211d',
+  accent: '#ef827a',
+  danger: '#ff978b',
+  dangerFill: '#a83228',
+  onColor: '#fff',
+  overlay: 'rgba(0,0,0,0.6)',
+  floating: 'rgba(36,34,31,0.94)',
+};

@@ -1,6 +1,9 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import type { ReactNode } from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { ProfileViewSwitcher } from './ProfileViewSwitcher';
 
 type Props = {
@@ -22,6 +25,7 @@ type Props = {
 // Both personal and friend profiles use the same geometry and visual defaults.
 export function ProfileLayout({ toolbar, username, photoUri, year, month, totalPhotos,
   viewMode, onChangeView, onPrev, onNext, children, bottomInset = 0, onPressIdentity }: Props) {
+  const styles = useThemedStyles(createStyles);
   const identity = (
     <>
       {photoUri ? <Image source={{ uri: photoUri }} style={styles.avatar} /> : <View style={styles.avatar} />}
@@ -51,11 +55,11 @@ export function ProfileLayout({ toolbar, username, photoUri, year, month, totalP
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, paddingTop: 54, paddingHorizontal: 8 },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background, paddingTop: 54, paddingHorizontal: 8 },
   toolbar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12, minHeight: 22 },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 40 },
-  avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#ddd' },
+  avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: colors.surfaceAlt },
   identityText: { flexShrink: 1 },
   photoCount: {
     marginTop: 6,
@@ -63,14 +67,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: '#756f66',
+    color: colors.muted,
   },
   username: {
     fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }),
     fontSize: 26,
     fontWeight: '400',
     letterSpacing: -0.5,
-    color: '#24211d',
+    color: colors.text,
     flexShrink: 1,
   },
 });

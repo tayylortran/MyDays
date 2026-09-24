@@ -1,16 +1,11 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { PhotoImage } from '@/src/components/PhotoImage';
 import { useMemo, type ReactNode } from 'react';
 import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
 import Animated, { useAnimatedScrollHandler, type SharedValue } from 'react-native-reanimated';
-import {
-    ActivityIndicator,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-} from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View,  } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePicturesScreen } from './usePicturesScreen';
 
@@ -20,6 +15,8 @@ export default function PicturesScreen({ closeGesture, headerGesture, header, sc
   header: ReactNode;
   scrollY: SharedValue<number>;
 }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const pictures = usePicturesScreen();
   const scrollGesture = useMemo(() => Gesture.Native().requireExternalGestureToFail(closeGesture), [closeGesture]);
   const filterGesture = useMemo(() => Gesture.Native().requireExternalGestureToFail(headerGesture), [headerGesture]);
@@ -45,7 +42,7 @@ export default function PicturesScreen({ closeGesture, headerGesture, header, sc
         <Text style={styles.title}>Pictures</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Refresh pictures" disabled={pictures.loading}
           onPress={() => void pictures.refresh()} style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}>
-          <Text style={{ color: pictures.loading ? '#aaa' : '#756f66' }}>{pictures.loading ? 'Loading…' : 'Refresh'}</Text>
+          <Text style={{ color: pictures.loading ? colors.disabled : colors.muted }}>{pictures.loading ? 'Loading…' : 'Refresh'}</Text>
         </Pressable>
         <Text style={styles.subtitle} accessibilityLiveRegion="polite">
           {pictures.totalPhotos === null
@@ -138,7 +135,7 @@ export default function PicturesScreen({ closeGesture, headerGesture, header, sc
         ListFooterComponent={
           <View style={styles.footer}>
             {pictures.loading ? (
-              <ActivityIndicator color="#333" />
+              <ActivityIndicator color={colors.text} />
             ) : pictures.error ? (
               <>
                 <Text style={styles.error}>{pictures.error}</Text>
@@ -174,10 +171,10 @@ export default function PicturesScreen({ closeGesture, headerGesture, header, sc
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   header: {
     paddingHorizontal: 16,
@@ -189,7 +186,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: '400',
     letterSpacing: -1,
-    color: '#24211d',
+    color: colors.text,
   },
   subtitle: {
     marginTop: 6,
@@ -197,7 +194,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: '#756f66',
+    color: colors.muted,
   },
   filters: {
     paddingHorizontal: 16,
@@ -215,20 +212,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e7e2da',
-    backgroundColor: '#fff',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   selectedFilter: {
-    backgroundColor: '#eee8df',
-    borderColor: '#d3c8b9',
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.border,
   },
   filterText: {
-    color: '#333',
+    color: colors.text,
     fontSize: 12,
     fontWeight: '500',
   },
   selectedFilterText: {
-    color: '#24211d',
+    color: colors.text,
     fontWeight: '600',
   },
   list: {
@@ -248,12 +245,12 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     aspectRatio: 0.8,
-    backgroundColor: '#f4f2ee',
+    backgroundColor: colors.surfaceAlt,
   },
   message: {
     padding: 24,
     textAlign: 'center',
-    color: '#666',
+    color: colors.muted,
   },
   footer: {
     padding: 20,
@@ -261,7 +258,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   error: {
-    color: '#a33',
+    color: colors.danger,
     textAlign: 'center',
   },
   action: {
@@ -269,10 +266,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     justifyContent: 'center',
     borderRadius: 10,
-    backgroundColor: '#eee',
+    backgroundColor: colors.surfaceAlt,
   },
   actionText: {
-    color: '#333',
+    color: colors.text,
     fontWeight: '600',
   },
 });

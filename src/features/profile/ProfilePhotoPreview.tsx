@@ -1,8 +1,10 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { PhotoImage } from '@/src/components/PhotoImage';
 import type { SharedCover } from '@/src/data/friendTypes';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ProfilePhotoPreview({ photo, onClose }: { photo: SharedCover | null; onClose: () => void }) {
@@ -14,6 +16,7 @@ export function ProfilePhotoPreview({ photo, onClose }: { photo: SharedCover | n
 }
 
 function PreviewContent({ photo, onClose }: { photo: SharedCover; onClose: () => void }) {
+  const { colors } = useTheme();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [ratio, setRatio] = useState(3 / 4);
@@ -26,7 +29,7 @@ function PreviewContent({ photo, onClose }: { photo: SharedCover; onClose: () =>
     <Pressable accessible={false} onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <Pressable accessibilityRole="button" accessibilityLabel="Close photo preview" onPress={onClose}
         style={{ position: 'absolute', top: insets.top + 8, right: 16, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-        <Ionicons name="close" size={26} color="#fff" />
+        <Ionicons name="close" size={26} color={colors.onColor} />
       </Pressable>
       <Pressable accessible={false} onPress={() => {}} style={{ width: frameWidth, height: frameWidth / ratio, borderRadius: 12, overflow: 'hidden', backgroundColor: '#191816' }}>
         <PhotoImage photo={photo} contentFit="contain" accessible accessibilityLabel={`Photo from ${photo.date}`}
@@ -36,12 +39,12 @@ function PreviewContent({ photo, onClose }: { photo: SharedCover; onClose: () =>
             setLoading(false);
           }}
           onError={() => { setError(true); setLoading(false); }} />
-        {loading && <ActivityIndicator color="#fff" style={{ position: 'absolute', inset: 0 }} />}
+        {loading && <ActivityIndicator color={colors.onColor} style={{ position: 'absolute', inset: 0 }} />}
         {error && <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <Text style={{ color: '#fff', textAlign: 'center' }}>Could not load this photo. Close and try again.</Text>
+          <Text style={{ color: colors.onColor, textAlign: 'center' }}>Could not load this photo. Close and try again.</Text>
         </View>}
       </Pressable>
-      <Text style={{ color: '#ddd', fontSize: 13, marginTop: 16 }}>{photo.date}</Text>
+      <Text style={{ color: colors.disabled, fontSize: 13, marginTop: 16 }}>{photo.date}</Text>
     </Pressable>
   );
 }

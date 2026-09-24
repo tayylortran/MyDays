@@ -1,16 +1,13 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text, TextInput } from '@/src/theme/primitives';
 import { signIn, signUp } from '@/src/features/auth/authService';
 import { useState } from 'react';
-import {
-    Button,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-} from 'react-native';
+import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet,  } from 'react-native';
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   // These hold what the user types while this screen is open.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -78,7 +75,7 @@ export default function LoginScreen() {
               style={styles.input}
               accessibilityLabel="Username"
               placeholder="Choose a username"
-              placeholderTextColor="#777"
+              placeholderTextColor={colors.muted}
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -95,7 +92,7 @@ export default function LoginScreen() {
           style={styles.input}
           accessibilityLabel="Email"
           placeholder="you@example.com"
-          placeholderTextColor="#777"
+          placeholderTextColor={colors.muted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -109,7 +106,7 @@ export default function LoginScreen() {
           style={styles.input}
           accessibilityLabel="Password"
           placeholder="Enter your password"
-          placeholderTextColor="#777"
+          placeholderTextColor={colors.muted}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -139,10 +136,10 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   form: {
     flexGrow: 1,
@@ -154,19 +151,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111',
+    color: colors.text,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111',
+    color: colors.text,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#aaa',
+    borderColor: colors.border,
     borderRadius: 8,
     padding: 14,
     fontSize: 16,
-    color: '#111',
+    color: colors.text,
   },
 });

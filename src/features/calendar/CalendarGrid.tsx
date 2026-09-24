@@ -1,7 +1,9 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { Circle, Hangout } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
 import { useMemo, useState } from 'react';
-import { LayoutChangeEvent, Pressable, ScrollView, Text, View } from 'react-native';
+import { LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native';
 import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
 
 type CalendarGridProps = {
@@ -23,6 +25,7 @@ export function CalendarGrid({
   onPressHangout,
   openingGesture,
 }: CalendarGridProps) {
+  const { colors } = useTheme();
   const scrollGesture = useMemo(() => {
     const gesture = Gesture.Native();
     return openingGesture ? gesture.requireExternalGestureToFail(openingGesture) : gesture;
@@ -64,7 +67,7 @@ export function CalendarGrid({
       >
       <View style={{ flexDirection: 'row', height: weekdayRowHeight, alignItems: 'center' }}>
         {WEEKDAYS.map((w, i) => (
-          <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#999', fontSize: 12 }}>
+          <Text key={i} style={{ flex: 1, textAlign: 'center', color: colors.subtle, fontSize: 12 }}>
             {w}
           </Text>
         ))}
@@ -77,16 +80,16 @@ export function CalendarGrid({
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
-                  style={{ flex: 1, borderRadius: 8, backgroundColor: '#f4f2ee', padding: 4 }}
+                  style={{ flex: 1, borderRadius: 8, backgroundColor: colors.surfaceAlt, padding: 4 }}
                 >
-                  <Text style={{ fontSize: 11, color: '#666' }}>{Number(date.slice(8))}</Text>
+                  <Text style={{ fontSize: 11, color: colors.muted }}>{Number(date.slice(8))}</Text>
 
                   {(byDate[date] || []).map((h) => (
                     <Pressable
                       key={h.id}
                       onPress={() => onPressHangout(h)}
                       style={{
-                        backgroundColor: `${circleById[h.circleId]?.color ?? '#999'}33`,
+                        backgroundColor: `${circleById[h.circleId]?.color ?? '#999999'}33`,
                         borderRadius: 4,
                         paddingHorizontal: 3,
                         paddingVertical: 2,

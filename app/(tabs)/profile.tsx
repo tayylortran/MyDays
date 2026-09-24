@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
 import { ChooseDayFaceModal } from '@/src/features/profile/ChooseDayFaceModal';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
 import { ProfilePhotoGrid } from '@/src/features/profile/ProfilePhotoGrid';
@@ -10,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 export default function Profile() {
+  const { colors } = useTheme();
   const profile = useProfileScreen();
   const { user } = useAuth();
 
@@ -22,7 +24,7 @@ export default function Profile() {
       toolbar={
         <Pressable onPress={profile.openSettings} hitSlop={12}
           accessibilityRole="button" accessibilityLabel="Open settings">
-          <Ionicons name="settings-outline" size={22} color="#333" />
+          <Ionicons name="settings-outline" size={22} color={colors.text} />
         </Pressable>
       }
     >

@@ -10,6 +10,6 @@ export function hangoutDate(date: string, long = false) {
   });
 }
 
-export function circleTint(color: string) {
-  return /^#[0-9a-f]{6}$/i.test(color) ? `${color}22` : '#f4f2ee';
+export function circleTint(color: string, fallback: string) {
+  return /^#[0-9a-f]{6}$/i.test(color) ? `${color}22` : fallback;
 }

@@ -1,4 +1,6 @@
-import { Pressable, Text, View } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
+import { Pressable, View } from 'react-native';
 
 type ProfileViewSwitcherProps = {
   viewMode: 'calendar' | 'grid';
@@ -6,6 +8,7 @@ type ProfileViewSwitcherProps = {
 };
 
 export function ProfileViewSwitcher({ viewMode, onChange }: ProfileViewSwitcherProps) {
+  const { colors } = useTheme();
   return (
     <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
       <Pressable
@@ -14,11 +17,11 @@ export function ProfileViewSwitcher({ viewMode, onChange }: ProfileViewSwitcherP
           flex: 1,
           paddingVertical: 10,
           borderRadius: 999,
-          backgroundColor: viewMode === 'calendar' ? '#333' : '#eee',
+          backgroundColor: viewMode === 'calendar' ? colors.action : colors.surfaceAlt,
           alignItems: 'center',
         }}
       >
-        <Text style={{ color: viewMode === 'calendar' ? '#fff' : '#333', fontWeight: '600' }}>
+        <Text style={{ color: viewMode === 'calendar' ? colors.onAction : colors.text, fontWeight: '600' }}>
           Calendar
         </Text>
       </Pressable>
@@ -29,11 +32,11 @@ export function ProfileViewSwitcher({ viewMode, onChange }: ProfileViewSwitcherP
           flex: 1,
           paddingVertical: 10,
           borderRadius: 999,
-          backgroundColor: viewMode === 'grid' ? '#333' : '#eee',
+          backgroundColor: viewMode === 'grid' ? colors.action : colors.surfaceAlt,
           alignItems: 'center',
         }}
       >
-        <Text style={{ color: viewMode === 'grid' ? '#fff' : '#333', fontWeight: '600' }}>
+        <Text style={{ color: viewMode === 'grid' ? colors.onAction : colors.text, fontWeight: '600' }}>
           Grid
         </Text>
       </Pressable>

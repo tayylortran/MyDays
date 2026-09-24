@@ -1,3 +1,6 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import type { FriendProfile } from '@/src/data/friendTypes';
 import { useRepo } from '@/src/data/RepositoryProvider';
 import { ProfileCalendarGrid } from '@/src/features/profile/ProfileCalendarGrid';
@@ -7,12 +10,14 @@ import { ProfilePhotoPreview } from '@/src/features/profile/ProfilePhotoPreview'
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Result = { key: string; profile: FriendProfile | null; error: string };
 
 export function FriendProfileScreen({ userId }: { userId: string }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const repo = useRepo();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -59,16 +64,16 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
       viewMode={viewMode} onChangeView={setViewMode} onPrev={() => moveMonth(-1)} onNext={() => moveMonth(1)}
       bottomInset={insets.bottom} toolbar={<View style={styles.toolbar}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back to friends" hitSlop={12} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/friends')}>
-          <Ionicons name="chevron-back" size={22} color="#333" />
+          <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Refresh friend profile" hitSlop={12} onPress={() => { void load(); }}>
-          <Ionicons name="refresh-outline" size={22} color="#333" />
+          <Ionicons name="refresh-outline" size={22} color={colors.text} />
         </Pressable>
       </View>}>
       {error ? <View style={styles.message}>
         <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>
         <Pressable accessibilityRole="button" onPress={() => { void load(); }} style={styles.retry}><Text style={styles.retryText}>Try again</Text></Pressable>
-      </View> : !profile ? <ActivityIndicator color="#716d66" style={styles.message} /> : <>
+      </View> : !profile ? <ActivityIndicator color={colors.muted} style={styles.message} /> : <>
         {viewMode === 'calendar' ? <ProfileCalendarGrid year={month.year} month={month.month}
           onViewPhoto={setPreviewDate}
           faces={Object.fromEntries(profile.covers.map((cover) => [cover.date, cover]))} />
@@ -79,10 +84,10 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   toolbar: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   message: { padding: 24, alignItems: 'center', gap: 16 },
-  error: { color: '#a34736', fontSize: 14, lineHeight: 22, textAlign: 'center' },
-  retry: { paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 22, backgroundColor: '#efede8' },
-  retryText: { color: '#716d66', fontWeight: '600' },
+  error: { color: colors.danger, fontSize: 14, lineHeight: 22, textAlign: 'center' },
+  retry: { paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', borderRadius: 22, backgroundColor: colors.surfaceAlt },
+  retryText: { color: colors.muted, fontWeight: '600' },
 });

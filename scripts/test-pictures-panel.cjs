@@ -40,6 +40,11 @@ function pan() {
 }
 const jsx = (type, props) => ({ type, props });
 const mocks = {
+  '@/src/theme/ThemeProvider': {
+    useTheme: () => ({ colors: {} }),
+    useThemedStyles: (createStyles) => createStyles({}),
+  },
+  '@/src/theme/primitives': { Text: 'Text' },
   react: {
     createContext: () => ({ Provider: 'Provider' }),
     useContext: () => context,

@@ -1,13 +1,16 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { CalendarGrid } from '@/src/features/calendar/CalendarGrid';
 import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { HangoutFlowModal } from '@/src/features/hangouts/HangoutFlowModal';
 import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useCalendarPicturesGesture } from '@/src/features/pictures/PicturesPanel';
 
 export default function Home() {
+  const { colors } = useTheme();
   const calendar = useCalendarScreen(); //calls the brain and stores everything it hands back as a variable called calendar. 
   const pictures = useCalendarPicturesGesture(
     calendar.hangoutEditor.state.mode === 'closed' && !calendar.editingCircle && !calendar.creatingCircle,
@@ -56,14 +59,14 @@ export default function Home() {
                 backgroundColor: c.color,
               }}
             />
-            <Text style={{ fontSize: 12, color: '#555' }}>
+            <Text style={{ fontSize: 12, color: colors.secondary }}>
               {c.name}
             </Text>
           </Pressable>
         ))}
 
         <Pressable onPress={calendar.openCreateCircle}>
-          <Text style={{ fontSize: 18, color: '#555' }}>+</Text>
+          <Text style={{ fontSize: 18, color: colors.secondary }}>+</Text>
         </Pressable>
       </View>
 
@@ -82,8 +85,8 @@ export default function Home() {
       <Pressable accessibilityRole="button" accessibilityLabel="Open pictures"
         onPress={pictures.open} disabled={!pictures.open}
         style={{ minHeight: 44, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-        <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#c8c2b9' }} />
-        <Text style={{ fontSize: 12, color: '#756f66' }}>Swipe up for pictures</Text>
+        <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.pressed }} />
+        <Text style={{ fontSize: 12, color: colors.muted }}>Swipe up for pictures</Text>
       </Pressable>
     </GestureDetector>
 

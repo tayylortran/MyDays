@@ -1,15 +1,16 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text, TextInput } from '@/src/theme/primitives';
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
-import {
-  ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable,
-  RefreshControl, ScrollView, StyleSheet, Text, TextInput, View,
-} from 'react-native';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, View,  } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FriendsController } from './friendsController';
 
 type Props = { controller: FriendsController; state: ReturnType<FriendsController['getSnapshot']> };
 
 function Person({ username, children }: { username: string; children: ReactNode }) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.person}>
       <View style={styles.avatar} accessible={false}>
@@ -22,6 +23,8 @@ function Person({ username, children }: { username: string; children: ReactNode 
 }
 
 export function AddFriendsSheet({ state, controller }: Props) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
   const busy = state.working !== null;
   const disabled = busy || state.loading || !!state.loadError;
@@ -35,8 +38,8 @@ export function AddFriendsSheet({ state, controller }: Props) {
         accessibilityState={{ disabled, busy: working }} disabled={disabled}
         onPress={() => { void controller.act(action, id); }}
         style={({ pressed }) => [styles.button, secondary && styles.secondaryButton, (disabled || pressed) && styles.dimmed]}>
-        {working ? <ActivityIndicator size="small" color={secondary ? '#666159' : '#fff'} /> : action === 'decline' ? (
-          <Ionicons name="close" size={19} color="#716d66" />
+        {working ? <ActivityIndicator size="small" color={secondary ? colors.muted : colors.onAction} /> : action === 'decline' ? (
+          <Ionicons name="close" size={19} color={colors.muted} />
         ) : <Text style={[styles.buttonText, secondary && styles.secondaryText]}>{label}</Text>}
       </Pressable>
     );
@@ -59,7 +62,7 @@ export function AddFriendsSheet({ state, controller }: Props) {
             </View>
             <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}
               contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
-              refreshControl={<RefreshControl refreshing={state.loading} onRefresh={() => { if (!busy) void controller.refresh(); }} tintColor="#716d66" />}>
+              refreshControl={<RefreshControl refreshing={state.loading} onRefresh={() => { if (!busy) void controller.refresh(); }} tintColor={colors.muted} />}>
               {!!state.loadError && <View style={styles.errorBox}>
                 <Text accessibilityLiveRegion="polite" style={styles.error}>{state.loadError}</Text>
                 <Pressable accessibilityRole="button" disabled={busy} onPress={() => { void controller.refresh(); }} style={styles.retry}>
@@ -75,22 +78,22 @@ export function AddFriendsSheet({ state, controller }: Props) {
                     {actionButton('decline', person.friendshipId, person.username)}
                   </Person>)}
                 </View>
-              ) : <Text style={styles.muted}>You’re all caught up.</Text> : state.loading ? <ActivityIndicator color="#716d66" /> : null}
+              ) : <Text style={styles.muted}>You’re all caught up.</Text> : state.loading ? <ActivityIndicator color={colors.muted} /> : null}
 
               <Text style={[styles.sectionLabel, styles.sectionSpace]}>FIND SOMEONE NEW</Text>
               <View style={styles.searchField}>
-                <Ionicons name="search-outline" size={22} color="#a29d94" />
+                <Ionicons name="search-outline" size={22} color={colors.subtle} />
                 <TextInput value={state.query} onChangeText={controller.setQuery} editable={!busy}
-                  placeholder="Search an exact username" placeholderTextColor="#a29d94" accessibilityLabel="Search an exact username"
+                  placeholder="Search an exact username" placeholderTextColor={colors.subtle} accessibilityLabel="Search an exact username"
                   autoCapitalize="none" autoCorrect={false} maxLength={30} returnKeyType="search"
                   onSubmitEditing={() => { Keyboard.dismiss(); void controller.search(); }} style={styles.input} />
                 {state.query.length > 0 && <Pressable accessibilityRole="button" accessibilityLabel="Clear username" disabled={busy}
-                  hitSlop={8} onPress={() => controller.setQuery('')}><Ionicons name="close-circle" size={19} color="#a29d94" /></Pressable>}
+                  hitSlop={8} onPress={() => controller.setQuery('')}><Ionicons name="close-circle" size={19} color={colors.subtle} /></Pressable>}
               </View>
               <Pressable accessibilityRole="button" accessibilityLabel="Search username" disabled={busy || !state.query.trim() || state.searchStatus === 'loading'}
                 onPress={() => { Keyboard.dismiss(); void controller.search(); }}
                 style={({ pressed }) => [styles.searchSubmit, (pressed || busy || !state.query.trim()) && styles.dimmed]}>
-                {state.searchStatus === 'loading' ? <ActivityIndicator color="#716d66" size="small" /> : <Text style={styles.retryText}>Search</Text>}
+                {state.searchStatus === 'loading' ? <ActivityIndicator color={colors.muted} size="small" /> : <Text style={styles.retryText}>Search</Text>}
               </Pressable>
               {state.searchStatus === 'error' && <Text accessibilityLiveRegion="polite" style={styles.error}>{state.searchError}</Text>}
               {state.searchStatus === 'done' && !result && <Text accessibilityLiveRegion="polite" style={styles.muted}>No other user found with that username.</Text>}
@@ -115,37 +118,37 @@ export function AddFriendsSheet({ state, controller }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  modal: { flex: 1, backgroundColor: 'rgba(36,36,33,0.25)' },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  modal: { flex: 1, backgroundColor: colors.overlay },
   keyboard: { flex: 1 },
-  sheet: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center', backgroundColor: '#fcfbf9', borderTopLeftRadius: 26, borderTopRightRadius: 26, overflow: 'hidden' },
-  handle: { width: 42, height: 4, borderRadius: 2, backgroundColor: '#dbd7d0', alignSelf: 'center', marginTop: 8, marginBottom: 12 },
+  sheet: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center', backgroundColor: colors.surface, borderTopLeftRadius: 26, borderTopRightRadius: 26, overflow: 'hidden' },
+  handle: { width: 42, height: 4, borderRadius: 2, backgroundColor: colors.pressed, alignSelf: 'center', marginTop: 8, marginBottom: 12 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 20, gap: 12 },
-  heading: { fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }), fontSize: 34, color: '#242421', flexShrink: 1 },
+  heading: { fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }), fontSize: 34, color: colors.text, flexShrink: 1 },
   done: { minHeight: 44, justifyContent: 'center' },
-  doneText: { fontSize: 16, color: '#716d66' },
+  doneText: { fontSize: 16, color: colors.muted },
   content: { paddingHorizontal: 20 },
-  sectionLabel: { fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }), fontSize: 10, fontWeight: '600', letterSpacing: 1.5, color: '#918b81', marginBottom: 12 },
+  sectionLabel: { fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }), fontSize: 10, fontWeight: '600', letterSpacing: 1.5, color: colors.subtle, marginBottom: 12 },
   sectionSpace: { marginTop: 30 },
-  requestGroup: { backgroundColor: '#f5f3ef', borderRadius: 18, borderWidth: 1, borderColor: '#e6e3dd', paddingHorizontal: 12 },
-  person: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e9e6e0' },
-  avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#e7e3db', alignItems: 'center', justifyContent: 'center' },
-  initial: { color: '#8d8578', fontSize: 18, fontWeight: '500' },
-  username: { flex: 1, fontSize: 15, fontWeight: '600', color: '#292925' },
+  requestGroup: { backgroundColor: colors.surfaceAlt, borderRadius: 18, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12 },
+  person: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  initial: { color: colors.muted, fontSize: 18, fontWeight: '500' },
+  username: { flex: 1, fontSize: 15, fontWeight: '600', color: colors.text },
   personActions: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  button: { minHeight: 44, minWidth: 44, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', borderRadius: 23, backgroundColor: '#2d2e2b' },
-  buttonText: { fontSize: 13, fontWeight: '600', color: '#fffdfa' },
-  secondaryButton: { backgroundColor: '#eae7e2', paddingHorizontal: 12 },
-  secondaryText: { color: '#716d66' },
+  button: { minHeight: 44, minWidth: 44, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', borderRadius: 23, backgroundColor: colors.action },
+  buttonText: { fontSize: 13, fontWeight: '600', color: colors.onAction },
+  secondaryButton: { backgroundColor: colors.surfaceAlt, paddingHorizontal: 12 },
+  secondaryText: { color: colors.muted },
   dimmed: { opacity: 0.5 },
-  muted: { color: '#918b81', fontSize: 14, lineHeight: 22 },
-  searchField: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#e5e1da', borderRadius: 14, paddingHorizontal: 13, backgroundColor: '#f1efeb' },
-  input: { flex: 1, minWidth: 0, minHeight: 52, color: '#383834', fontSize: 15, paddingVertical: 12 },
+  muted: { color: colors.subtle, fontSize: 14, lineHeight: 22 },
+  searchField: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 14, paddingHorizontal: 13, backgroundColor: colors.surfaceAlt },
+  input: { flex: 1, minWidth: 0, minHeight: 52, color: colors.text, fontSize: 15, paddingVertical: 12 },
   searchSubmit: { alignSelf: 'flex-end', minHeight: 44, minWidth: 64, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  status: { color: '#918b81', fontSize: 13, fontWeight: '600' },
+  status: { color: colors.subtle, fontSize: 13, fontWeight: '600' },
   errorBox: { marginBottom: 18 },
-  error: { color: '#a34736', fontSize: 13, lineHeight: 20 },
+  error: { color: colors.danger, fontSize: 13, lineHeight: 20 },
   actionError: { marginBottom: 18 },
   retry: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
-  retryText: { fontSize: 14, color: '#514b43', fontWeight: '600' },
+  retryText: { fontSize: 14, color: colors.secondary, fontWeight: '600' },
 });

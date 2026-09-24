@@ -1,5 +1,8 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { BackHandler, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { BackHandler, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, State } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +21,8 @@ type PanelContext = {
 const PicturesPanelContext = createContext<PanelContext | null>(null);
 
 export function PicturesPanelProvider({ children }: { children: ReactNode }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const progress = useSharedValue(0);
@@ -141,7 +146,7 @@ export function PicturesPanelProvider({ children }: { children: ReactNode }) {
           style={[StyleSheet.absoluteFill, styles.panel, panelStyle]}>
           {visible && (
               <PicturesScreen closeGesture={closeGesture} headerGesture={handleGesture} scrollY={photoScrollY} header={
-                <View style={{ paddingTop: insets.top, backgroundColor: '#fff' }}>
+                <View style={{ paddingTop: insets.top, backgroundColor: colors.surface }}>
                   <Pressable accessibilityRole="button" accessibilityLabel="Close pictures" onPress={close} style={styles.handle}>
                     <View style={styles.bar} />
                     <Text style={styles.hint}>⌄ Back to calendar</Text>
@@ -202,11 +207,11 @@ export function useCalendarPicturesGesture(enabled: boolean) {
   return { gesture, handleGesture, open: enabled ? open : undefined };
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   root: { flex: 1 },
   backdrop: { backgroundColor: '#000' },
-  panel: { backgroundColor: '#fff' },
+  panel: { backgroundColor: colors.surface },
   handle: { minHeight: 44, alignItems: 'center', justifyContent: 'center', gap: 4 },
-  bar: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#c8c2b9' },
-  hint: { fontSize: 12, color: '#756f66' },
+  bar: { width: 36, height: 4, borderRadius: 2, backgroundColor: colors.pressed },
+  hint: { fontSize: 12, color: colors.muted },
 });

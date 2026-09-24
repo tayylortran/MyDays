@@ -1,6 +1,9 @@
+import type { ThemeColors } from '@/src/theme/palette';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { MONTHS } from '@/src/lib/dates';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 type MonthHeaderProps = {
   month: number;
@@ -11,6 +14,8 @@ type MonthHeaderProps = {
 };
 
 export function MonthHeader({ month, year, subtitle, onPrev, onNext }: MonthHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.header}>
       <View style={styles.heading}>
@@ -28,7 +33,7 @@ export function MonthHeader({ month, year, subtitle, onPrev, onNext }: MonthHead
           onPress={onPrev}
           style={({ pressed }) => [styles.arrow, pressed && styles.pressed]}
         >
-          <Ionicons name="chevron-back" size={20} color="#333" />
+          <Ionicons name="chevron-back" size={20} color={colors.text} />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -36,14 +41,14 @@ export function MonthHeader({ month, year, subtitle, onPrev, onNext }: MonthHead
           onPress={onNext}
           style={({ pressed }) => [styles.arrow, pressed && styles.pressed]}
         >
-          <Ionicons name="chevron-forward" size={20} color="#333" />
+          <Ionicons name="chevron-forward" size={20} color={colors.text} />
         </Pressable>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,7 +63,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: '400',
     letterSpacing: -1,
-    color: '#24211d',
+    color: colors.text,
   },
   subtitle: {
     marginTop: 6,
@@ -66,16 +71,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: '#756f66',
+    color: colors.muted,
   },
   navigation: { flexDirection: 'row', gap: 4 },
   arrow: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f4f2ee',
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pressed: { backgroundColor: '#e6e1d9' },
+  pressed: { backgroundColor: colors.surfaceAlt },
 });

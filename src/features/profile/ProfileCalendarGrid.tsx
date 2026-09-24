@@ -1,8 +1,10 @@
+import { useTheme } from '@/src/theme/ThemeProvider';
+import { Text } from '@/src/theme/primitives';
 import { PhotoImage } from '@/src/components/PhotoImage';
 import type { Photo } from '@/src/data/types';
 import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 type ProfileCalendarGridProps = {
   year: number;
@@ -21,6 +23,7 @@ export function ProfileCalendarGrid({
   onPressDay,
   onViewPhoto,
 }: ProfileCalendarGridProps) {
+  const { colors } = useTheme();
   const dayCellAspectRatio = 0.8;
   const cells = monthGrid(year, month);
   const weeks: (string | null)[][] = [];
@@ -33,7 +36,7 @@ export function ProfileCalendarGrid({
     <ScrollView showsVerticalScrollIndicator={false}>
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAYS.map((w, i) => (
-          <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#999', fontSize: 12 }}>
+          <Text key={i} style={{ flex: 1, textAlign: 'center', color: colors.subtle, fontSize: 12 }}>
             {w}
           </Text>
         ))}
@@ -50,9 +53,9 @@ export function ProfileCalendarGrid({
                   accessibilityLabel={`${date}, ${onViewPhoto ? faces[date] ? 'View photo' : 'No cover photo' : !onPressDay ? faces[date] ? 'Cover photo' : 'No cover photo' : faces[date] ? 'Change cover photo' : photoDates.has(date) ? 'Choose cover photo' : 'No photos'}`}
                   disabled={onViewPhoto ? !faces[date] : !onPressDay || (!faces[date] && !photoDates.has(date))}
                   style={({ pressed }) => ({
-                    flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f4f2ee',
+                    flex: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: colors.surfaceAlt,
                     borderWidth: !faces[date] && photoDates.has(date) ? 1 : 0,
-                    borderColor: '#b4aa9c',
+                    borderColor: colors.border,
                     opacity: pressed ? 0.7 : 1,
                   })}
                 >
@@ -65,12 +68,12 @@ export function ProfileCalendarGrid({
                     />
                   ) : (
                     <>
-                      <Text style={{ fontSize: 11, color: photoDates.has(date) ? '#766d60' : '#bbb', padding: 4 }}>
+                      <Text style={{ fontSize: 11, color: photoDates.has(date) ? colors.muted : colors.disabled, padding: 4 }}>
                         {Number(date.slice(8))}
                       </Text>
                       {photoDates.has(date) && (
                         <View pointerEvents="none" style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name="image-outline" size={20} color="#8a7e6d" />
+                          <Ionicons name="image-outline" size={20} color={colors.muted} />
                         </View>
                       )}
                     </>
