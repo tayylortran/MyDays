@@ -76,11 +76,11 @@ export function CalendarGrid({
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, height: dayCellHeight, minHeight: openingGesture ? 0 : 72, padding: 3, overflow: 'hidden' }}>
+            <View key={di} style={{ flex: 1, height: dayCellHeight, minHeight: openingGesture ? 0 : 72, padding: 2, overflow: 'hidden' }}>
               {date && (
                 <Pressable
                   onPress={() => onPressDay(date)}
-                  style={{ flex: 1, borderRadius: 8, backgroundColor: colors.surfaceAlt, padding: 4 }}
+                  style={{ flex: 1, borderRadius: 8, backgroundColor: colors.surfaceAlt, paddingVertical: 4, paddingHorizontal: 2 }}
                 >
                   <Text style={{ fontSize: 11, color: colors.muted }}>{Number(date.slice(8))}</Text>
 
@@ -91,7 +91,7 @@ export function CalendarGrid({
                       style={{
                         backgroundColor: `${circleById[h.circleId]?.color ?? '#999999'}33`,
                         borderRadius: 4,
-                        paddingHorizontal: 3,
+                        paddingHorizontal: 2,
                         paddingVertical: 2,
                         marginTop: 2,
                       }}
