@@ -12,6 +12,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FriendProfileMenu } from './FriendProfileMenu';
 
 type Result = { key: string; profile: FriendProfile | null; error: string };
 
@@ -57,18 +58,20 @@ export function FriendProfileScreen({ userId }: { userId: string }) {
     const year = current.year + (next < 0 ? -1 : next > 11 ? 1 : 0);
     return year < 1 || year > 9999 ? current : { year, month: (next + 12) % 12 };
   });
+  const backToFriends = () => router.canGoBack() ? router.back() : router.replace('/(tabs)/friends');
 
   return (
     <ProfileLayout username={profile?.username ?? ''} photoUri={profile?.avatarUri ?? null}
       year={month.year} month={month.month} totalPhotos={profile?.totalPhotos ?? null}
       viewMode={viewMode} onChangeView={setViewMode} onPrev={() => moveMonth(-1)} onNext={() => moveMonth(1)}
       bottomInset={insets.bottom} toolbar={<View style={styles.toolbar}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back to friends" hitSlop={12} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/friends')}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Back to friends" onPress={backToFriends}
+          style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Refresh friend profile" hitSlop={12} onPress={() => { void load(); }}>
-          <Ionicons name="refresh-outline" size={22} color={colors.text} />
-        </Pressable>
+        <FriendProfileMenu key={userId} userId={userId} username={profile?.username ?? 'this user'}
+          onBlocked={() => { request.current++; setResult(null); setPreviewDate(null); backToFriends(); }}
+          onUnconfirmed={() => { setPreviewDate(null); void load(); }} />
       </View>}>
       {error ? <View style={styles.message}>
         <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>

@@ -30,6 +30,7 @@ function setup(overrides = {}, loadFeed = async () => ({ date: '2026-09-20', fri
     declineFriendRequest: async (id) => { calls.push(['decline', id]); relationship = 'none'; },
     cancelFriendRequest: async (id) => { calls.push(['cancel', id]); relationship = 'none'; },
     removeFriend: async (id) => { calls.push(['remove', id]); relationship = 'none'; },
+    unblockUser: async (id) => { calls.push(['unblock', id]); relationship = 'none'; },
     getFriendsToday: loadFeed,
     ...overrides,
   };
@@ -67,6 +68,22 @@ async function main() {
   await c.act('decline', 'request');
   assert.equal(c.getSnapshot().lists.incoming.length, 0);
   assert.deepEqual(calls.map(([action]) => action), ['send', 'cancel', 'accept', 'decline']);
+
+  setRelationship('blocked');
+  await c.refresh();
+  assert.equal(c.getSnapshot().result.relationship, 'blocked');
+  await c.act('unblock', 'bob');
+  assert.equal(c.getSnapshot().result.relationship, 'none', 'Unblock restores Add without restoring friendship');
+  assert.equal(c.getSnapshot().lists.friends.length, 0);
+  const blockedUncertain = setup({ unblockUser: async () => {
+    blockedUncertain.setRelationship('none'); throw new Error('Could not confirm the unblock.');
+  } });
+  blockedUncertain.setRelationship('blocked');
+  blockedUncertain.controller.open(); await settle();
+  blockedUncertain.controller.setQuery('Bob'); await blockedUncertain.controller.search();
+  await blockedUncertain.controller.act('unblock', 'bob');
+  assert.equal(blockedUncertain.controller.getSnapshot().result.relationship, 'none');
+  assert.match(blockedUncertain.controller.getSnapshot().actionError, /Could not confirm/);
 
   const removal = setup();
   removal.setRelationship('friends');

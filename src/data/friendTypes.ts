@@ -4,8 +4,10 @@ export type FriendSearchResult = {
   userId: string;
   username: string;
   friendshipId: string | null;
-  relationship: 'none' | 'incoming' | 'outgoing' | 'friends';
+  relationship: 'none' | 'incoming' | 'outgoing' | 'friends' | 'blocked';
 };
+
+export type BlockedUser = { userId: string; username: string; blockedAt: string };
 
 export type FriendListEntry = {
   friendshipId: string;

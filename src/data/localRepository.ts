@@ -10,6 +10,9 @@ async function friendsUnavailable(): Promise<never> {
 }
 
 export const localRepository: Repository = {
+  blockUser: friendsUnavailable,
+  unblockUser: friendsUnavailable,
+  listBlockedUsers: friendsUnavailable,
   searchFriendUsername: friendsUnavailable,
   listFriends: friendsUnavailable,
   listIncomingFriendRequests: friendsUnavailable,

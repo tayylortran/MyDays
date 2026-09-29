@@ -4,9 +4,12 @@ import {
   Photo, ProfileSettings, SaveHangoutInput, SavedHangout
 } from './types';
 
-import type { FriendListEntry, FriendProfile, FriendSearchResult, FriendsToday } from './friendTypes';
+import type { BlockedUser, FriendListEntry, FriendProfile, FriendSearchResult, FriendsToday } from './friendTypes';
 
 export interface FriendsRepository {
+  blockUser(userId: string): Promise<void>;
+  unblockUser(userId: string): Promise<void>;
+  listBlockedUsers(): Promise<BlockedUser[]>;
   searchFriendUsername(username: string): Promise<FriendSearchResult | null>;
   listFriends(): Promise<FriendListEntry[]>;
   listIncomingFriendRequests(): Promise<FriendListEntry[]>;

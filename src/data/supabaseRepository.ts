@@ -9,6 +9,9 @@ import { getFriendsToday } from './supabase/friendsFeed';
 import { getFriendProfile } from './supabase/friendProfiles';
 
 export const supabaseRepository: Repository = {
+    blockUser: friends.blockUser,
+    unblockUser: friends.unblockUser,
+    listBlockedUsers: friends.listBlockedUsers,
     searchFriendUsername: friends.searchFriendUsername,
     listFriends: friends.listFriends,
     listIncomingFriendRequests: friends.listIncomingFriendRequests,

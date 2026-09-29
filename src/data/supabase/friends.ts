@@ -1,6 +1,6 @@
 import { supabase } from '@/src/lib/supabase';
 
-import type { FriendListEntry, FriendSearchResult } from '../friendTypes';
+import type { BlockedUser, FriendListEntry, FriendSearchResult } from '../friendTypes';
 
 type FriendRow = {
   friendship_id: string;
@@ -46,8 +46,8 @@ export const listOutgoingFriendRequests = () => listRelationships('outgoing');
 
 // A lost response may follow a committed mutation. Ask the UI to refresh instead
 // of claiming the operation failed or inviting a blind retry of a deletion.
-async function mutateFriendship(name: string, args: Record<string, string>): Promise<unknown> {
-  const unconfirmed = 'Could not confirm the change. Refresh your friends before trying again.';
+async function mutateFriendship(name: string, args: Record<string, string>,
+  unconfirmed = 'Could not confirm the change. Refresh your friends before trying again.'): Promise<unknown> {
   let response;
   try { response = await supabase.rpc(name, args); }
   catch { throw new Error(unconfirmed); }
@@ -74,3 +74,25 @@ async function endFriendship(friendshipId: string, action: 'decline' | 'cancel' 
 export const declineFriendRequest = (friendshipId: string) => endFriendship(friendshipId, 'decline');
 export const cancelFriendRequest = (friendshipId: string) => endFriendship(friendshipId, 'cancel');
 export const removeFriend = (friendshipId: string) => endFriendship(friendshipId, 'remove');
+
+export async function blockUser(userId: string): Promise<void> {
+  await mutateFriendship('block_user', { p_user_id: userId },
+    'Could not confirm the block. Check Settings → Blocked users before trying again.');
+}
+
+export async function unblockUser(userId: string): Promise<void> {
+  await mutateFriendship('unblock_user', { p_user_id: userId },
+    'Could not confirm the unblock. Reload the blocked list or search again.');
+}
+
+export async function listBlockedUsers(): Promise<BlockedUser[]> {
+  const rows: { user_id: string; username: string; blocked_at: string }[] = [];
+  while (true) {
+    const { data, error } = await supabase.rpc('list_blocked_users', { p_limit: 50, p_offset: rows.length });
+    if (error) throw new Error(error.message);
+    if (!Array.isArray(data)) throw new Error('Could not load blocked users. Please try again.');
+    rows.push(...data);
+    if (data.length < 50) break;
+  }
+  return rows.map((row) => ({ userId: row.user_id, username: row.username, blockedAt: row.blocked_at }));
+}

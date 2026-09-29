@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, View,  } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FriendsController } from './friendsController';
+import { BlockedUserRow } from './BlockedUserRow';
 
 type Props = { controller: FriendsController; state: ReturnType<FriendsController['getSnapshot']> };
 
@@ -97,7 +98,10 @@ export function AddFriendsSheet({ state, controller }: Props) {
               </Pressable>
               {state.searchStatus === 'error' && <Text accessibilityLiveRegion="polite" style={styles.error}>{state.searchError}</Text>}
               {state.searchStatus === 'done' && !result && <Text accessibilityLiveRegion="polite" style={styles.muted}>No other user found with that username.</Text>}
-              {result && <Person username={result.username}>
+              {result?.relationship === 'blocked' && <BlockedUserRow key={result.userId} username={result.username}
+                disabled={disabled} working={state.working === `unblock:${result.userId}`}
+                onUnblock={() => { void controller.act('unblock', result.userId); }} />}
+              {result && result.relationship !== 'blocked' && <Person username={result.username}>
                 {result.relationship === 'none' && actionButton('send', result.userId, result.username)}
                 {result.relationship === 'friends' && <Text accessibilityLiveRegion="polite" style={styles.status}>Friends</Text>}
                 {result.relationship === 'incoming' && result.friendshipId && actionButton('accept', result.friendshipId, result.username)}

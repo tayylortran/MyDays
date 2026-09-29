@@ -23,7 +23,7 @@ type FriendsState = {
 const message = (error: unknown) => error instanceof Error ? error.message : 'Something went wrong. Please try again.';
 
 // Keep asynchronous state separate from rendering so races and retries can be tested.
-export function createFriendsController(api: Omit<FriendsRepository, 'getFriendProfile'>) {
+export function createFriendsController(api: Omit<FriendsRepository, 'getFriendProfile' | 'blockUser' | 'listBlockedUsers'>) {
   let state: FriendsState = {
     open: false, friendsOpen: false, friendQuery: '', removalTarget: null,
     lists: null, loading: false, loadError: '', query: '',
@@ -92,7 +92,7 @@ export function createFriendsController(api: Omit<FriendsRepository, 'getFriendP
     if (active && state.open && recheckSearch && version === searchVersion && !state.loadError) await search();
   }
 
-  async function act(action: 'send' | 'accept' | 'decline' | 'cancel' | 'remove', id: string) {
+  async function act(action: 'send' | 'accept' | 'decline' | 'cancel' | 'remove' | 'unblock', id: string) {
     if (!active || mutating || state.loading || state.loadError) return;
     mutating = true;
     const query = state.query;
@@ -104,6 +104,7 @@ export function createFriendsController(api: Omit<FriendsRepository, 'getFriendP
       else if (action === 'accept') await api.acceptFriendRequest(id);
       else if (action === 'decline') await api.declineFriendRequest(id);
       else if (action === 'remove') await api.removeFriend(id);
+      else if (action === 'unblock') await api.unblockUser(id);
       else await api.cancelFriendRequest(id);
     } catch (error) {
       update({ actionError: message(error) });

@@ -33,6 +33,8 @@ async function main() {
   assert.deepEqual(requests.at(-1).body, { p_username: 'Bob' });
   replies.push({ body: [] });
   assert.equal(await api.searchFriendUsername('Missing'), null);
+  replies.push({ body: [{ user_id: 'bob', username: 'Bob', friendship_id: null, relationship: 'blocked' }] });
+  assert.equal((await api.searchFriendUsername('Bob')).relationship, 'blocked');
   const count = requests.length;
   for (const value of ['', 'ab', 'wild%', 'has spaces']) await assert.rejects(api.searchFriendUsername(value), /Enter a username/);
   assert.equal(requests.length, count);
@@ -59,6 +61,24 @@ async function main() {
     await api[method]('request');
     assert.deepEqual(requests.at(-1).body, { p_friendship_id: 'request', p_action: action });
   }
+  for (const [method, rpc] of [['blockUser', 'block_user'], ['unblockUser', 'unblock_user']]) {
+    replies.push({ body: null });
+    await api[method]('bob');
+    assert.equal(requests.at(-1).url.pathname, '/rest/v1/rpc/' + rpc);
+    assert.deepEqual(requests.at(-1).body, { p_user_id: 'bob' });
+    replies.push({ status: 503, body: { code: '', message: 'Connection lost' } });
+    await assert.rejects(api[method]('bob'), /Could not confirm/);
+  }
+  const blockedRow = (id) => ({ user_id: `blocked-${id}`, username: `Blocked${id}`, blocked_at: '2026-09-29T00:00:00Z' });
+  replies.push({ body: Array.from({ length: 50 }, (_, id) => blockedRow(id)) }, { body: [blockedRow(50)] });
+  const blocked = await api.listBlockedUsers();
+  assert.equal(blocked.length, 51);
+  assert.deepEqual(requests.at(-1).body, { p_limit: 50, p_offset: 50 });
+  assert.deepEqual(blocked[50], { userId: 'blocked-50', username: 'Blocked50', blockedAt: '2026-09-29T00:00:00Z' });
+  replies.push({ body: null });
+  await assert.rejects(api.listBlockedUsers(), /Could not load blocked users/);
+  replies.push({ status: 403, body: { code: '42501', message: 'Permission denied' } });
+  await assert.rejects(api.blockUser('bob'), /Permission denied/);
   replies.push({ status: 400, body: { code: 'P0001', message: 'This incoming request is unavailable.' } });
   await assert.rejects(api.acceptFriendRequest('request'), /incoming request is unavailable/);
   replies.push({ status: 503, body: { code: '', message: 'Connection lost' } });
@@ -70,6 +90,6 @@ async function main() {
   replies.push({ body: null });
   await assert.rejects(api.searchFriendUsername('Bob'), /Could not load the search result/);
   assert.equal(replies.length, 0);
-  console.log('PASS: friend search, pagination, request actions, server rejections, and uncertain writes.');
+  console.log('PASS: friend/blocked search, list pagination, request/block actions, server rejections, and uncertain writes.');
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
