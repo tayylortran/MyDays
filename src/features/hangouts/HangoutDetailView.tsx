@@ -43,14 +43,14 @@ export function HangoutDetailView({ controller, circles, onPreview }: {
           <Text style={styles.meta}>{hangoutDate(hangout.date, true)}</Text>
           {hangout.note ? <Text style={styles.diary}>{hangout.note}</Text> : null}
           {photos.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photos}>
+            <View style={styles.photos}>
               {photos.map((photo, index) => (
                 <Pressable key={photo.id} accessibilityRole="button" accessibilityLabel={`View photo ${index + 1}`}
-                  onPress={() => onPreview(photo)}>
-                  <PhotoImage photo={photo} thumbnail contentFit="cover" style={styles.thumbnail} />
+                  style={styles.photoCard} onPress={() => onPreview(photo)}>
+                  <PhotoImage photo={photo} contentFit="cover" style={styles.thumbnail} />
                 </Pressable>
               ))}
-            </ScrollView>
+            </View>
           )}
           {!!controller.error && <Text accessibilityLiveRegion="polite" style={styles.error}>{controller.error}</Text>}
           {disabled && <Text style={styles.meta}>Deleting…</Text>}
@@ -98,7 +98,8 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   title: { fontFamily: hangoutSerif, fontSize: 30, lineHeight: 38, color: colors.text, marginTop: 18 },
   meta: { fontSize: 10, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', color: colors.muted, marginTop: 12, lineHeight: 17 },
   diary: { fontFamily: hangoutSerif, fontSize: 18, lineHeight: 29, color: colors.secondary, marginTop: 24 },
-  photos: { gap: 10, paddingTop: 26, paddingBottom: 10 },
-  thumbnail: { width: 76, height: 94, borderRadius: 12, backgroundColor: colors.surfaceAlt },
+  photos: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 10, marginHorizontal: -5, paddingTop: 26, paddingBottom: 10 },
+  photoCard: { width: '50%', paddingHorizontal: 5 },
+  thumbnail: { width: '100%', aspectRatio: 76 / 94, borderRadius: 12, backgroundColor: colors.surfaceAlt },
   error: { color: colors.danger, marginTop: 20 },
 });
