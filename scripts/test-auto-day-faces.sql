@@ -43,6 +43,13 @@ insert into public.day_faces(date, photo_id, updated_at)
 reset role;
 \ir ../supabase/migrations/20260929000000_auto_day_faces.sql
 
+-- A date emptied before the fix should also be eligible again.
+set role authenticated;
+select public.test_save_day('2026-09-03', '[{"kind":"new","id":"00000000-0000-4000-8000-000000000103"}]');
+delete from public.hangouts where date = '2026-09-03';
+reset role;
+\ir ../supabase/migrations/20261007000000_reset_deleted_day_faces.sql
+
 set role authenticated;
 do $$
 declare
@@ -54,6 +61,10 @@ declare
   edited jsonb;
   empty_day jsonb;
 begin
+  perform public.test_save_day('2026-09-03', jsonb_build_array(jsonb_build_object('kind','new','id',gen_random_uuid())));
+  if not exists(select 1 from public.day_faces where date = '2026-09-03') then
+    raise exception 'Migration did not reset an already emptied date';
+  end if;
   if exists(select 1 from public.day_faces where date = '2026-09-01')
     or (select photo_id from public.day_faces where date = '2026-09-02')
       is distinct from '00000000-0000-4000-8000-000000000102'::uuid then
@@ -110,13 +121,35 @@ begin
   if exists(select 1 from public.day_faces where date = '2026-09-29') then
     raise exception 'Deleted cover replaced automatically';
   end if;
-  delete from public.hangouts where date = '2026-09-29';
+  -- Deleting just one hangout must not reset a date with other hangouts.
+  delete from public.hangouts where id = (edited->'hangout'->>'id')::uuid;
   perform public.test_save_day('2026-09-29', jsonb_build_array(jsonb_build_object('kind','new','id',gen_random_uuid())));
   if exists(select 1 from public.day_faces where date = '2026-09-29') then
-    raise exception 'Deleting all hangouts erased initialization';
+    raise exception 'Deleting one of several hangouts reset initialization';
+  end if;
+
+  -- Recreating an old date after deleting every hangout selects its first photo.
+  delete from public.hangouts where date = '2026-09-29';
+  perform public.test_save_day('2026-09-29', jsonb_build_array(
+    jsonb_build_object('kind','new','id',a), jsonb_build_object('kind','new','id',b)));
+  if (select photo_id from public.day_faces where date = '2026-09-29') is distinct from a then
+    raise exception 'Recreated date did not select its first photo';
+  end if;
+  -- A rolled-back deletion must preserve both the cover and initialization.
+  begin
+    delete from public.hangouts where date = '2026-09-29';
+    raise exception 'Undo deletion';
+  exception when raise_exception then
+    if sqlerrm <> 'Undo deletion' then raise; end if;
+  end;
+  perform public.test_save_day('2026-09-29', jsonb_build_array(jsonb_build_object('kind','new','id',gen_random_uuid())));
+  if (select photo_id from public.day_faces where date = '2026-09-29') is distinct from a then
+    raise exception 'Rolled-back deletion changed initialization';
   end if;
 
   -- Failure after the first photo insert must roll back its cover and marker.
+  a := gen_random_uuid();
+  b := gen_random_uuid();
   begin
     perform public.test_save_day('2026-09-30', jsonb_build_array(
       jsonb_build_object('kind','new','id',a), jsonb_build_object('kind','new','id',b)), null, b);
