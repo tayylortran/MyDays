@@ -1,8 +1,8 @@
-import type { ThemeColors } from '@/src/theme/palette';
-import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
-import { Text } from '@/src/theme/primitives';
 import { PhotoImage } from '@/src/components/PhotoImage';
 import { QUIET_FRIEND_PREVIEW_LIMIT, type FeedPerson, type TodayPost } from '@/src/data/friendTypes';
+import type { ThemeColors } from '@/src/theme/palette';
+import { Text } from '@/src/theme/primitives';
+import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, View } from 'react-native';
@@ -71,7 +71,6 @@ export function FriendsFeed({ state, controller }: Props) {
         </View> : null}
       ListFooterComponent={people.length > 0 ? <View style={styles.everyone}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>{feed ? 'Everyone else' : 'Your friends'}</Text>
-        <Text style={styles.subtitle}>{feed ? 'Quiet today — tap to visit anyway' : 'Tap to visit a profile'}</Text>
         <View style={styles.people}>
           {preview.map((person) => <Pressable key={person.userId} accessibilityRole="button" accessibilityLabel={`View ${person.username}'s profile`}
             onPress={() => openProfile(person.userId)} style={({ pressed }) => [styles.person, pressed && styles.pressed]}>
@@ -108,8 +107,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   caption: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingVertical: 10, backgroundColor: colors.overlay },
   photoTitle: { fontFamily: mono, fontSize: 10, lineHeight: 15, color: colors.onColor },
   everyone: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, paddingTop: 20, marginTop: 8 },
-  sectionTitle: { fontFamily: serif, fontSize: 25, color: colors.text },
-  subtitle: { fontSize: 12, lineHeight: 18, color: colors.subtle, marginTop: 4, marginBottom: 16 },
+  sectionTitle: { fontFamily: serif, fontSize: 25, color: colors.text, marginBottom: 16 },
   people: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -4 },
   person: { width: '20%', alignItems: 'center', paddingHorizontal: 4, marginBottom: 16 },
   avatar: { width: '100%', maxWidth: 72, aspectRatio: 1, borderRadius: 999, backgroundColor: colors.surfaceAlt },
