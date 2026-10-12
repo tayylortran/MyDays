@@ -5,7 +5,9 @@ import { Text } from '@/src/theme/primitives';
 import { useTheme, useThemedStyles } from '@/src/theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { ProfilePhotoPreview } from '../profile/ProfilePhotoPreview';
 import type { FriendsController } from './friendsController';
 
 type Props = { state: ReturnType<FriendsController['getSnapshot']>; controller: FriendsController };
@@ -24,6 +26,7 @@ export function FriendsFeed({ state, controller }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
+  const [selectedPost, setSelectedPost] = useState<TodayPost | null>(null);
   const feed = state.feed;
   const posts = feed?.posts ?? [];
   const cards: (TodayPost | null)[] = posts.length % 2 ? [...posts, null] : posts;
@@ -35,6 +38,7 @@ export function FriendsFeed({ state, controller }: Props) {
   const openProfile = (userId: string) => router.push({ pathname: '/friends/[userId]', params: { userId } });
 
   return (
+    <>
     <FlatList
       data={cards} numColumns={2} keyExtractor={(post) => post?.userId ?? 'empty-cell'}
       showsVerticalScrollIndicator={false} style={styles.list} contentContainerStyle={styles.content}
@@ -51,17 +55,18 @@ export function FriendsFeed({ state, controller }: Props) {
           <Text style={styles.date}>{dateLabel}</Text>
         </View>
       </>}
-      renderItem={({ item }) => item ? <Pressable accessibilityRole="button" accessibilityLabel={`View ${item.username}'s profile: ${item.title}`}
-        onPress={() => openProfile(item.userId)} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-        <View style={styles.author}>
+      renderItem={({ item }) => item ? <View style={styles.card}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`View ${item.username}'s profile`}
+          onPress={() => openProfile(item.userId)} style={({ pressed }) => [styles.author, pressed && styles.pressed]}>
           <Avatar person={item} small />
           <Text numberOfLines={1} style={styles.username}>{item.username}</Text>
-        </View>
-        <View style={styles.photo}>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={`Open ${item.username}'s photo: ${item.title}`}
+          onPress={() => setSelectedPost(item)} style={({ pressed }) => [styles.photo, pressed && styles.pressed]}>
           <PhotoImage photo={item.photo} style={styles.photoImage} contentFit="cover" />
           <View style={styles.caption}><Text numberOfLines={2} style={styles.photoTitle}>{item.title}</Text></View>
-        </View>
-      </Pressable> : <View style={styles.card} accessible={false} />}
+        </Pressable>
+      </View> : <View style={styles.card} accessible={false} />}
       ListEmptyComponent={state.feedLoading && !feed ? <ActivityIndicator color={colors.muted} style={styles.loading} />
         : feed ? <View style={styles.empty}>
           <Text style={styles.muted}>{feed.friendCount > 0 ? 'No photos yet today.' : 'Add friends to see their daily photos.'}</Text>
@@ -87,6 +92,8 @@ export function FriendsFeed({ state, controller }: Props) {
         </View>
       </View> : null}
     />
+    <ProfilePhotoPreview photo={selectedPost?.photo ?? null} title={selectedPost?.title} onClose={() => setSelectedPost(null)} />
+    </>
   );
 }
 
