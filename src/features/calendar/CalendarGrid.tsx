@@ -88,7 +88,7 @@ export function CalendarGrid({
                   accessibilityLabel={`${hangoutDate(date, true)}, ${(byDate[date] || []).length} hangouts`}
                   accessibilityHint={(byDate[date] || []).length ? 'Shows hangouts for this day' : 'Add a hangout for this day'}
                   onPress={() => onPressDay(date)}
-                  style={({ pressed }) => ({ flex: 1, minHeight: 44, minWidth: 44, borderRadius: 8, backgroundColor: pressed ? colors.pressed : colors.surfaceAlt, paddingVertical: 4, paddingHorizontal: 2, overflow: 'hidden' })}
+                  style={({ pressed }) => ({ flex: 1, minHeight: 44, minWidth: 44, borderRadius: 8, backgroundColor: pressed ? colors.pressed : colors.surfaceAlt, paddingVertical: 2, paddingHorizontal: 0, overflow: 'hidden' })}
                 >
                   <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
                   <Text style={{ fontSize: 11, color: colors.muted }}>{Number(date.slice(8))}</Text>
@@ -99,8 +99,8 @@ export function CalendarGrid({
                       style={{
                         backgroundColor: `${circleById[h.circleId]?.color ?? '#999999'}33`,
                         borderRadius: 4,
-                        paddingHorizontal: 2,
-                        paddingVertical: 2,
+                        paddingHorizontal: 1,
+                        paddingVertical: 1,
                         marginTop: 2,
                       }}
                     >
