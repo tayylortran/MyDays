@@ -149,9 +149,10 @@ for (const [width, height] of [[304, 200], [359, 500], [414, 600]]) {
   const gridWidth = horizontal.props.contentContainerStyle.width;
   const buttons = nodes(tree, 'Pressable');
   assert.equal(buttons.length, 31, 'One target per day; event previews have no nested buttons');
-  assert.ok(gridWidth / 7 - 4 >= 44, 'Day width meets the iOS target even on narrow screens');
-  const cells = nodes(tree, 'View').filter((node) => node.props.style?.height && node.props.style?.padding === 2);
-  assert.ok(cells.every((cell) => cell.props.style.height - 4 >= 44), 'Day height meets the iOS target');
+  assert.ok(gridWidth / 7 >= 44, 'Day width meets the iOS target even on narrow screens');
+  const cells = nodes(tree, 'View').filter((node) => node.props.style?.height && node.props.style?.flex === 1);
+  assert.ok(cells.length >= 31);
+  assert.ok(cells.every((cell) => cell.props.style.height >= 44), 'Day height meets the iOS target');
   assert.equal(horizontal.props.scrollEnabled, width < 336);
 }
 const { CalendarDayView } = load('src/features/calendar/CalendarDayView.tsx', {

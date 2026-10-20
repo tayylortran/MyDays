@@ -1,10 +1,10 @@
 import { useTheme } from '@/src/theme/ThemeProvider';
 import { Text } from '@/src/theme/primitives';
 import { Circle, Hangout } from '@/src/data/types';
-import { monthGrid, WEEKDAYS } from '@/src/lib/dates';
+import { monthGrid, todayISODate, WEEKDAYS } from '@/src/lib/dates';
 import { hangoutDate } from '@/src/features/hangouts/hangoutStyles';
-import { useMemo, useState } from 'react';
-import { LayoutChangeEvent, Pressable, ScrollView, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { AppState, LayoutChangeEvent, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector, type PanGesture } from 'react-native-gesture-handler';
 
 type CalendarGridProps = {
@@ -25,6 +25,25 @@ export function CalendarGrid({
   openingGesture,
 }: CalendarGridProps) {
   const { colors } = useTheme();
+  const [today, setToday] = useState(todayISODate);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    function scheduleMidnight() {
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 100);
+      timer = setTimeout(refreshToday, midnight.getTime() - Date.now());
+    }
+    function refreshToday() {
+      setToday(todayISODate());
+      clearTimeout(timer);
+      scheduleMidnight();
+    }
+    scheduleMidnight();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refreshToday();
+    });
+    return () => { clearTimeout(timer); subscription.remove(); };
+  }, []);
   const scrollGesture = useMemo(() => {
     const gesture = Gesture.Native();
     return openingGesture ? gesture.requireExternalGestureToFail(openingGesture) : gesture;
@@ -39,7 +58,7 @@ export function CalendarGrid({
     weeks.push(cells.slice(i, i + 7));
   }
 
-  // Four points of cell padding leave a minimum 44 x 44 point button.
+  // Full-cell targets stay comfortably above 44 x 44 points without gutters.
   const dayCellHeight = Math.max(48, (calendarHeight - weekdayRowHeight) / 6);
   const gridWidth = Math.max(336, calendarWidth);
 
@@ -80,18 +99,22 @@ export function CalendarGrid({
 
       {weeks.map((week, wi) => (
         <View key={wi} style={{ flexDirection: 'row' }}>
+          <View pointerEvents="none" accessible={false} style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            height: StyleSheet.hairlineWidth, backgroundColor: `${colors.border}80`,
+          }} />
           {week.map((date, di) => (
-            <View key={di} style={{ flex: 1, height: dayCellHeight, padding: 2, overflow: 'hidden' }}>
+            <View key={di} style={{ flex: 1, height: dayCellHeight, overflow: 'hidden' }}>
               {date && (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`${hangoutDate(date, true)}, ${(byDate[date] || []).length} hangouts`}
+                  accessibilityLabel={`${date === today ? 'Today, ' : ''}${hangoutDate(date, true)}, ${(byDate[date] || []).length} hangouts`}
                   accessibilityHint={(byDate[date] || []).length ? 'Shows hangouts for this day' : 'Add a hangout for this day'}
                   onPress={() => onPressDay(date)}
-                  style={({ pressed }) => ({ flex: 1, minHeight: 44, minWidth: 44, borderRadius: 8, backgroundColor: pressed ? colors.pressed : colors.surfaceAlt, paddingVertical: 2, paddingHorizontal: 0, overflow: 'hidden' })}
+                  style={({ pressed }) => ({ flex: 1, minHeight: 44, minWidth: 44, backgroundColor: pressed ? colors.pressed : 'transparent', paddingVertical: 2, paddingHorizontal: 0, overflow: 'hidden' })}
                 >
                   <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-                  <Text style={{ fontSize: 11, color: colors.muted }}>{Number(date.slice(8))}</Text>
+                  <Text style={{ fontSize: 11, color: colors.muted, paddingHorizontal: 2 }}>{Number(date.slice(8))}</Text>
 
                   {(byDate[date] || []).map((h) => (
                     <View
@@ -101,6 +124,7 @@ export function CalendarGrid({
                         borderRadius: 4,
                         paddingHorizontal: 1,
                         paddingVertical: 1,
+                        marginHorizontal: 2,
                         marginTop: 2,
                       }}
                     >
@@ -116,6 +140,12 @@ export function CalendarGrid({
                     </View>
                   ))}
                   </View>
+                  {date === today && (
+                    <View pointerEvents="none" accessible={false} style={{
+                      position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+                      borderWidth: 1, borderRadius: 8, borderColor: `${colors.muted}66`,
+                    }} />
+                  )}
                 </Pressable>
               )}
             </View>
