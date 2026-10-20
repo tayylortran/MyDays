@@ -6,15 +6,22 @@ import { HangoutFlowModal } from '@/src/features/hangouts/HangoutFlowModal';
 import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
 import { Pressable, View } from 'react-native';
+import { useState } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useCalendarPicturesGesture } from '@/src/features/pictures/PicturesPanel';
 
 export default function Home() {
   const { colors } = useTheme();
   const calendar = useCalendarScreen(); //calls the brain and stores everything it hands back as a variable called calendar. 
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [calendarNeedsScroll, setCalendarNeedsScroll] = useState(false);
   const pictures = useCalendarPicturesGesture(
-    calendar.hangoutEditor.state.mode === 'closed' && !calendar.editingCircle && !calendar.creatingCircle,
+    calendar.hangoutEditor.state.mode === 'closed' && !selectedDate && !calendar.editingCircle && !calendar.creatingCircle && !calendarNeedsScroll,
   );
+  function openDay(date: string) {
+    if (calendar.byDate[date]?.length) setSelectedDate(date);
+    else calendar.openAdd(date);
+  }
   //it holds all the actions and data for this screen. 
 
 
@@ -70,15 +77,16 @@ export default function Home() {
         </Pressable>
       </View>
 
+      <View style={{ flex: 1 }} onLayout={(event) => setCalendarNeedsScroll(event.nativeEvent.layout.height < 308)}>
       <CalendarGrid //component
-        openingGesture={pictures.gesture}
+        openingGesture={calendarNeedsScroll ? undefined : pictures.gesture}
         year={calendar.year}
         month={calendar.month}
         byDate={calendar.byDate}
         circleById={calendar.circleById}
-        onPressDay={calendar.openAdd}
-        onPressHangout={calendar.openDetail}
+        onPressDay={openDay}
       />
+      </View>
     </View>
     </GestureDetector>
     <GestureDetector gesture={pictures.handleGesture}>
@@ -90,7 +98,13 @@ export default function Home() {
       </Pressable>
     </GestureDetector>
 
-      <HangoutFlowModal controller={calendar.hangoutEditor} circles={calendar.circles} />
+      <HangoutFlowModal controller={calendar.hangoutEditor} circles={calendar.circles}
+        day={selectedDate ? {
+          date: selectedDate,
+          hangouts: calendar.byDate[selectedDate] || [],
+          onClose: () => setSelectedDate(null),
+          onAdd: () => calendar.openAdd(selectedDate),
+        } : undefined} />
 
       <EditCircleModal
         editingCircle={calendar.editingCircle}

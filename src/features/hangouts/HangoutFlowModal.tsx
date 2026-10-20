@@ -10,19 +10,27 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HangoutDetailView } from './HangoutDetailView';
 import { HangoutEditorForm } from './HangoutEditorForm';
 import type { HangoutEditorController } from './useHangoutEditor';
+import { CalendarDayView, type CalendarDayProps } from '@/src/features/calendar/CalendarDayView';
 
-export function HangoutFlowModal({ controller, circles }: { controller: HangoutEditorController; circles: Circle[] }) {
+export function HangoutFlowModal({ controller, circles, day }: {
+  controller: HangoutEditorController;
+  circles: Circle[];
+  day?: CalendarDayProps;
+}) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const [preview, setPreview] = useState<Photo | null>(null);
   const insets = useSafeAreaInsets();
   const mode = controller.state.mode;
+  const close = () => preview ? setPreview(null) : mode !== 'closed' ? controller.close() : day?.onClose();
   useEffect(() => { setPreview(null); }, [mode]);
   return (
-    <Modal visible={mode !== 'closed'} transparent animationType="slide" statusBarTranslucent
-      onRequestClose={() => preview ? setPreview(null) : controller.close()}>
+    <Modal visible={mode !== 'closed' || !!day} transparent animationType="slide" statusBarTranslucent
+      onRequestClose={close}>
+      {mode === 'closed' && day && <CalendarDayView {...day} circles={circles} onPressHangout={controller.openDetail} />}
       {mode === 'edit' && <HangoutEditorForm controller={controller} circles={circles} />}
-      {mode === 'view' && <HangoutDetailView controller={controller} circles={circles} onPreview={setPreview} />}
+      {mode === 'view' && <HangoutDetailView controller={controller} circles={circles} onPreview={setPreview}
+        backLabel={day ? 'Back to day hangouts' : undefined} />}
       {mode === 'loading' && (
         <View style={styles.loading}>
           {controller.error ? (

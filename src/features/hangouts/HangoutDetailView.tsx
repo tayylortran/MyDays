@@ -10,10 +10,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { circleTint, hangoutDate, hangoutSerif } from './hangoutStyles';
 import type { HangoutEditorController } from './useHangoutEditor';
 
-export function HangoutDetailView({ controller, circles, onPreview }: {
+export function HangoutDetailView({ controller, circles, onPreview, backLabel = 'Close hangout' }: {
   controller: HangoutEditorController;
   circles: Circle[];
   onPreview: (photo: Photo) => void;
+  backLabel?: string;
 }) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -58,7 +59,7 @@ export function HangoutDetailView({ controller, circles, onPreview }: {
       </ScrollView>
       {menuOpen && <Pressable accessibilityLabel="Close hangout menu" onPress={() => setMenuOpen(false)} style={StyleSheet.absoluteFill} />}
       <View style={[styles.toolbar, { top: insets.top + 12 }]} pointerEvents="box-none">
-        <Pressable accessibilityRole="button" accessibilityLabel="Close hangout" onPress={controller.close} disabled={disabled} style={styles.iconButton}>
+        <Pressable accessibilityRole="button" accessibilityLabel={backLabel} onPress={controller.close} disabled={disabled} style={styles.iconButton}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
         <View style={styles.menuContainer}>
