@@ -5,7 +5,7 @@ import { MonthHeader } from '@/src/features/calendar/MonthHeader';
 import { HangoutFlowModal } from '@/src/features/hangouts/HangoutFlowModal';
 import { EditCircleModal } from '@/src/features/hangouts/EditCircleModal';
 import { useCalendarScreen } from '@/src/features/hangouts/useCalendarScreen';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useState } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useCalendarPicturesGesture } from '@/src/features/pictures/PicturesPanel';
@@ -42,21 +42,26 @@ export default function Home() {
         onNext={calendar.next}
       />
 
-      <View
-        style={{
+      <ScrollView
+        horizontal
+        directionalLockEnabled
+        showsHorizontalScrollIndicator
+        style={{ flexGrow: 0, flexShrink: 0, marginBottom: 10 }}
+        contentContainerStyle={{
           flexDirection: 'row',
-          flexWrap: 'wrap',
           alignItems: 'center',
-          gap: 12,
-          marginBottom: 10,
+          gap: 4,
           paddingHorizontal: 2,
+          paddingBottom: 4,
         }}
       >
         {calendar.circles.map((c) => (
           <Pressable
             key={c.id}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit ${c.name} circle`}
             onPress={() => calendar.openEditCircle(c)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+            style={({ pressed }) => ({ minWidth: 44, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 12, backgroundColor: pressed ? colors.pressed : 'transparent' })}
           >
             <View
               style={{
@@ -66,16 +71,17 @@ export default function Home() {
                 backgroundColor: c.color,
               }}
             />
-            <Text style={{ fontSize: 12, color: colors.secondary }}>
+            <Text numberOfLines={1} style={{ fontSize: 12, color: colors.secondary }}>
               {c.name}
             </Text>
           </Pressable>
         ))}
 
-        <Pressable onPress={calendar.openCreateCircle}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Add circle" onPress={calendar.openCreateCircle}
+          style={({ pressed }) => ({ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: pressed ? colors.pressed : 'transparent' })}>
           <Text style={{ fontSize: 18, color: colors.secondary }}>+</Text>
         </Pressable>
-      </View>
+      </ScrollView>
 
       <View style={{ flex: 1 }} onLayout={(event) => setCalendarNeedsScroll(event.nativeEvent.layout.height < 308)}>
       <CalendarGrid //component
