@@ -5,7 +5,7 @@ import { PhotoImage } from '@/src/components/PhotoImage';
 import { MAX_HANGOUT_PHOTOS, type Circle } from '@/src/data/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View, type TextInput as NativeTextInput } from 'react-native';
+import { Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View, type TextInput as NativeTextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hangoutDate, hangoutSerif } from './hangoutStyles';
 import { colorText } from '@/src/lib/color';
@@ -41,6 +41,14 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
   const circle = circles.find((c) => c.id === draft.hangout.circleId);
   const color = circle?.color ?? colors.dangerFill;
   const disabled = controller.working !== null;
+
+  function confirmRemovePhoto(id: string) {
+    if (disabled) return;
+    Alert.alert('Remove photo?', 'Are you sure you want to remove this photo?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => controller.removePhoto(id) },
+    ]);
+  }
 
   function choosePhotoSource() {
     if (disabled) return;
@@ -104,8 +112,12 @@ export function HangoutEditorForm({ controller, circles }: { controller: Hangout
               <View key={photo.id} style={styles.photoItem}>
                 <PhotoImage photo={photo} thumbnail style={styles.photo} contentFit="cover" />
                 <Pressable accessibilityRole="button" accessibilityLabel={`Remove photo ${index + 1}`} disabled={disabled}
-                  onPress={() => controller.removePhoto(photo.id)} style={styles.removePhoto}>
-                  <Ionicons name="close" size={17} color={colors.onColor} />
+                  accessibilityHint="Asks for confirmation before removing this photo"
+                  accessibilityState={{ disabled }}
+                  onPress={() => confirmRemovePhoto(photo.id)} style={styles.removePhoto}>
+                  <View pointerEvents="none" style={styles.removePhotoBadge}>
+                    <Ionicons name="close" size={17} color={colors.onColor} />
+                  </View>
                 </Pressable>
               </View>
             ))}
@@ -168,7 +180,8 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   photoItem: { width: 82, height: 104 },
   photo: { width: '100%', height: '100%', borderRadius: 12, backgroundColor: colors.surfaceAlt },
   addPhoto: { width: 72, height: 104, borderWidth: 1, borderColor: colors.border, borderRadius: 12, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  removePhoto: { position: 'absolute', top: 2, right: 2, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)' },
+  removePhoto: { position: 'absolute', top: 0, right: 0, width: 44, height: 44, paddingTop: 2, paddingRight: 2, alignItems: 'flex-end' },
+  removePhotoBadge: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)' },
   diary: { minHeight: 130, maxHeight: 160, backgroundColor: colors.surfaceAlt, borderRadius: 18, padding: 16, color: colors.secondary, fontSize: 15, lineHeight: 23 },
   error: { color: colors.danger, marginTop: 16, lineHeight: 20 },
   footer: { paddingHorizontal: 24, paddingTop: 12, backgroundColor: colors.surface },
