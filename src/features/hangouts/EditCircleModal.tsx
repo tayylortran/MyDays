@@ -4,6 +4,7 @@ import { Circle } from '@/src/data/types';
 import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useState } from 'react';
 import { CircleColorPicker, ColorWheelSwatch } from './CircleColorPicker';
+import { CIRCLE_COLORS } from './circleColors';
 
 type EditCircleModalProps = {
   editingCircle: Circle | null;
@@ -23,8 +24,6 @@ type EditCircleModalProps = {
   onChangeDeleteDestination: (id: string) => void;
   onDelete: () => void;
 };
-
-const CIRCLE_COLORS = ['#E8674C', '#E0A73E', '#4C86E8', '#7B61C9', '#3FA372', '#D65B9A'];
 
 export function EditCircleModal({
   editingCircle,

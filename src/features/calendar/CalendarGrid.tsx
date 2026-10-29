@@ -24,7 +24,7 @@ export function CalendarGrid({
   onPressDay,
   openingGesture,
 }: CalendarGridProps) {
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const [today, setToday] = useState(todayISODate);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -120,7 +120,7 @@ export function CalendarGrid({
                     <View
                       key={h.id}
                       style={{
-                        backgroundColor: `${circleById[h.circleId]?.color ?? '#999999'}33`,
+                        backgroundColor: `${circleById[h.circleId]?.color ?? '#999999'}${mode === 'dark' ? '88' : '66'}`,
                         borderRadius: 4,
                         paddingHorizontal: 1,
                         paddingVertical: 1,

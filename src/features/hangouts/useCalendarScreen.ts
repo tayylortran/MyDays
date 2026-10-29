@@ -5,8 +5,7 @@ import { newId } from '@/src/lib/id';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useHangoutEditor } from './useHangoutEditor';
-
-const CIRCLE_COLORS = ['#E8674C', '#E0A73E', '#4C86E8', '#7B61C9', '#3FA372', '#D65B9A'];
+import { CIRCLE_COLORS } from './circleColors';
 
 export function useCalendarScreen() {
   const repo = useRepo();
